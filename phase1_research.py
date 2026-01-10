@@ -1,226 +1,296 @@
 """
 Phase 1: Pre-Call Intelligence System
-Six research agents that analyze company, contact, website, and competition
+Six research agents that analyze company, operations, and automation opportunities
 """
 
 from agent_framework import Agent, ParallelAgent, SequentialAgent, google_search, web_fetch
 from typing import Dict, Any
 
 
-# Agent 1: Company Intelligence
+# Agent 1: Company Intelligence (Updated for Operations Focus)
 company_intelligence_agent = Agent(
     name="CompanyIntelligenceAgent",
     output_key="company_profile",
     instructions="""
-You are a company research specialist. Analyze the provided company information and generate a comprehensive company profile.
+You are a company research specialist focusing on operational bottlenecks and automation opportunities.
 
 Your tasks:
-1. Identify the company's industry and market position
-2. Determine company size indicators (if available from website/context)
-3. Note any recent news, announcements, or activities mentioned
-4. Assess their business model and target market
-5. Identify key differentiators or unique selling points
+1. Identify the company's industry and business model
+2. Assess operational complexity (B2B services, e-commerce, multi-location, etc.)
+3. Infer likely operational bottlenecks based on industry:
+   - E-commerce: Order processing, inventory, customer service
+   - Real estate: Lead follow-up, appointment booking, after-hours calls
+   - Restaurants: Reservation management, catering orders, delivery coordination
+   - Professional services: Client intake, scheduling, proposal generation
+4. Note company size indicators (team size, transaction volume, growth stage)
+5. Identify growth constraints (what's limiting their ability to scale)
 
 Format your output as markdown with these sections:
 ## Company Overview
-## Industry & Market Position
-## Recent Activity & News
+## Business Model & Operational Complexity
+## Likely Operational Bottlenecks
+(Based on industry patterns)
+## Growth Constraints
+(What's stopping them from scaling)
 ## Key Facts & Insights
 
-Use the information provided in the context. Make educated inferences based on available data.
-Be specific and actionable. Focus on insights that would help in a sales conversation.
+Use the information provided. Make educated inferences based on available data.
+Focus on TIME DRAINS and MANUAL PROCESSES that automation could solve.
 """
 )
 
 
-# Agent 2: Contact Research
+# Agent 2: Contact Research (Updated for Decision Authority)
 contact_research_agent = Agent(
     name="ContactResearchAgent",
     output_key="contact_profile",
     instructions="""
-You are a contact research specialist. Analyze the contact person and infer their priorities.
+You are a contact research specialist. Analyze the contact person's role and decision-making authority.
 
 Your tasks:
 1. Identify the person's role and seniority level
-2. Based on their role, infer likely priorities:
-   - CEO/Founder: Business growth, ROI, competitive advantage
-   - Marketing Director/CMO: Lead generation, brand presence, conversion
-   - CTO/Technical: Performance, integrations, scalability
-   - Operations: Efficiency, automation, ease of management
-3. Note any background information available
-4. Identify potential pain points based on role
+2. Assess decision-making authority for automation projects:
+   - CEO/Founder: Full authority, cares about ROI and time back
+   - Operations Director: High authority, cares about efficiency and scalability
+   - CTO/Technical: Implementation authority, cares about reliability and integration
+   - Marketing Director: Moderate authority (for marketing automation), cares about lead gen
+3. Infer likely pain points based on role:
+   - Founder: Stuck in operations, can't focus on growth
+   - Operations: Manual processes breaking, team overwhelmed
+   - Technical: Integration complexity, system reliability concerns
+4. Determine budget holder (who controls the budget for this type of project)
 
 Format your output as markdown:
 ## Contact Information
 - Name & Role
-- Inferred Seniority
+- Seniority Level
+- Decision Authority
 
-## Likely Priorities
-(Based on role and industry)
+## Likely Pain Points
+(What keeps them up at night - be specific to their role)
 
-## Potential Pain Points
-(What keeps them up at night)
+## Budget Authority
+(Do they control budget, or who needs to approve?)
 
 ## Conversation Approach
-(How to position our services)
+(How to position transparent automation systems for their priorities)
+
+Focus on: TIME RECLAMATION, operational freedom, sustainable growth.
 """
 )
 
 
-# Agent 3: Website Analyzer
-website_analyzer_agent = Agent(
-    name="WebsiteAnalyzerAgent",
-    output_key="website_analysis",
+# Agent 3: Operations Analyzer (Formerly Website Analyzer)
+operations_analyzer_agent = Agent(
+    name="OperationsAnalyzerAgent",
+    output_key="operations_analysis",
     instructions="""
-You are a website analysis specialist. Evaluate the prospect's current website and identify opportunities.
+You are an operations analysis specialist. Evaluate current workflows and identify automation opportunities.
 
 Your tasks:
-1. Assess current website state (if URL provided, analyze structure and content)
-2. Identify technical issues or limitations
-3. Note missing features or opportunities:
-   - Missing CTAs (calls-to-action)
-   - Poor mobile experience indicators
-   - Unclear messaging
-   - Missing modern features (chat, forms, etc.)
-   - SEO concerns
-4. List specific improvement opportunities
+1. Analyze their current operational state based on:
+   - Pain points mentioned in submission
+   - Industry-typical manual processes
+   - Website clues (if URL provided - booking systems, contact forms, product catalogs)
+2. Identify time drains:
+   - Manual data entry
+   - Repetitive customer communications
+   - Order/appointment processing
+   - After-hours missed opportunities
+   - Report generation
+3. Estimate time currently spent on manual tasks (hours/week)
+4. List specific automation opportunities:
+   - Voice agents for after-hours calls
+   - Workflow automation for order processing
+   - Customer service automation
+   - Lead qualification and routing
+   - Reporting and analytics automation
 
 Format your output as markdown:
-## Current Website State
-(Overall impression, platform if identifiable, design era)
+## Current Operational State
+(What manual processes are they running)
 
-## Issues Identified
-- Technical problems
-- UX/design issues
-- Content gaps
+## Time Drains Identified
+- [Process]: Est. [X] hours/week
+- [Process]: Est. [X] hours/week
+**Total Estimated:** [X-Y] hours/week in manual work
 
-## Improvement Opportunities
-(Specific features or changes that would add value)
+## Automation Opportunities
+### High Impact (Quick Wins)
+- [Opportunity 1]: Save [X] hrs/week
+- [Opportunity 2]: Save [X] hrs/week
 
-## Competitive Gaps
-(What they're missing that competitors likely have)
+### Big Swings (Transformational)
+- [Opportunity 1]: Save [X] hrs/week, enable [growth outcome]
+- [Opportunity 2]: Save [X] hrs/week, enable [growth outcome]
 
-If no website URL is provided, note that and provide general questions to ask about their current web presence.
+## ROI Potential
+(If we save [X] hours/week at $[hourly rate], that's $[monthly value] back)
+
+If no website URL is provided, note that and base analysis on industry patterns and stated pain points.
+Focus on MEASURABLE time savings, not vague "efficiency gains."
 """
 )
 
 
-# Agent 4: Competitive Context
+# Agent 4: Competitive Context (Updated for AI Automation)
 competitive_context_agent = Agent(
     name="CompetitiveContextAgent",
     output_key="competitive_context",
     instructions="""
-You are a competitive intelligence specialist. Research the competitive landscape for this prospect.
+You are a competitive intelligence specialist. Research the competitive landscape and automation adoption.
 
 Your tasks:
 1. Identify likely competitors in their industry/market
-2. Note common features or capabilities competitors typically have
-3. Identify industry-standard platforms or technologies
-4. Find opportunities for differentiation
-5. Note competitive advantages they could gain with a strong web presence
+2. Assess typical automation maturity in this industry:
+   - Lagging (still mostly manual)
+   - Adopting (some automation, mostly tool-based)
+   - Advanced (integrated automation systems)
+3. Identify competitive risks of manual processes:
+   - Slower response times
+   - Higher operating costs
+   - Limited scalability
+   - Missed after-hours opportunities
+4. Note competitive advantages from automation:
+   - 24/7 availability (voice agents)
+   - Faster response times
+   - Lower cost per transaction
+   - Better data and insights
 
 Format your output as markdown:
 ## Competitive Landscape
 (Who are their likely competitors)
 
-## Industry Standards
-(Common features, platforms, or capabilities in this industry)
+## Automation Maturity in Industry
+(Are competitors using automation? What kind?)
+
+## Competitive Risks of Manual Processes
+(What they lose by staying manual)
 
 ## Opportunities to Differentiate
-(How a great website could give them competitive advantage)
+(How transparent automation could give them competitive advantage)
 
-## Risks of Inaction
-(What they lose by not improving their web presence)
+## Stakes
+(What happens if they do nothing vs. if they automate)
 
-Base your analysis on the industry and company information provided. Make informed inferences.
+Base analysis on industry and company information provided. Make informed inferences.
+Focus on: Speed, scalability, and customer experience advantages from automation.
 """
 )
 
 
-# Agent 5: Requirements Gatherer
+# Agent 5: Requirements Gatherer (Updated for Discovery Framework)
 requirements_gatherer_agent = Agent(
     name="RequirementsGathererAgent",
     output_key="discovery_questions",
     instructions="""
-You are a discovery specialist. Based on all previous research, generate targeted discovery questions.
+You are a discovery specialist using Revaya's "Where is your time disappearing?" framework.
 
 Review the outputs from:
 - company_profile
 - contact_profile
-- website_analysis
+- operations_analysis
 - competitive_context
 
 Your tasks:
-1. Generate 5-7 specific, targeted discovery questions
-2. Each question should reference specific findings from the research
-3. Focus areas:
-   - Project scope and objectives
-   - Number of pages and content structure
-   - Content readiness (do they have copy, images, etc.)
-   - Required integrations (CRM, payment, booking, etc.)
-   - Timeline and urgency
-   - Budget parameters
-   - Success metrics
+Generate 5-7 targeted discovery questions organized by framework phase:
 
-Format your output as a numbered list:
+**Phase 1: Time Audit**
+- Where is your time actually going each week?
+- What takes 30 minutes that you do every day?
+- What workflow makes you want to scream?
+
+**Phase 2: Pain Point Identification**
+- What's the operational bottleneck that limits growth?
+- Where are manual handoffs breaking?
+- What would give you 10 hours back per week?
+
+**Phase 3: Opportunity Cost**
+- What could you do with those 10 hours?
+- What's this costing you in revenue?
+- What growth opportunity are you missing?
+
+**Phase 4: Alignment Check**
+- Does this solution feel forced or natural?
+- What are we actually building toward?
+- What does success look like in 6 months?
+
+Format your output as:
 ## Discovery Questions for [Company Name]
 
-1. [Question with context from research]
-   *Why we're asking: [Strategic reason]*
+### Time Audit Questions
+1. [Specific question referencing their industry/pain points]
+   *Context: [Why we're asking based on research]*
 
-2. [Next question]
-   *Why we're asking: [Strategic reason]*
+### Pain Point Questions
+2. [Specific question]
+   *Context: [Strategic reason]*
 
-Make questions conversational and consultative, not interrogative.
-Reference specific findings to show you've done your homework.
+### Opportunity Cost Questions
+3. [Specific question]
+   *Context: [Strategic reason]*
+
+### Alignment Questions
+4. [Specific question]
+   *Context: [Strategic reason]*
+
+Make questions conversational and consultative. Reference specific research findings.
+Focus on MEASURABLE outcomes (hours saved, calls handled, processes automated).
 """
 )
 
 
-# Agent 6: Objection Anticipator
+# Agent 6: Objection Anticipator (Updated for Transparency Focus)
 objection_anticipator_agent = Agent(
     name="ObjectionAnticipatorAgent",
     output_key="objection_handling",
     instructions="""
-You are an objection handling specialist. Anticipate likely objections and prepare responses.
+You are an objection handling specialist. Anticipate likely objections and prepare transparent responses.
 
 Review all previous outputs:
 - company_profile
 - contact_profile
-- website_analysis
+- operations_analysis
 - competitive_context
 - discovery_questions
 
 Your tasks:
-1. Anticipate 4-6 likely objections based on:
-   - Industry (e.g., "We're in a commoditized industry")
-   - Company size (e.g., budget concerns)
-   - Current website state (e.g., "Our current site works fine")
-   - Contact's role (e.g., technical concerns, ROI concerns)
-2. Prepare strong responses with proof points
+Anticipate 4-6 likely objections based on:
+- Industry skepticism about AI/automation
+- Budget concerns
+- Technical complexity fears
+- "Black box" concerns (can't see what it's doing)
+- ROI uncertainty
+- Implementation disruption
 
 Common objection categories:
-- Price/Budget ("Too expensive", "We can do it cheaper")
-- DIY Options ("We can use Wix/Squarespace ourselves")
-- Timeline ("We need it faster")
-- Ownership ("Who owns the website?")
-- Results ("How do we know it will work?")
-- Urgency ("We're not ready yet")
+- **Trust:** "How do I know it won't mess things up?" → Emphasize audit trails, rollback mechanisms
+- **Transparency:** "Is this a black box?" → Emphasize specialized agents, full visibility
+- **Price/ROI:** "Too expensive" → Frame as cost per hour saved
+- **Complexity:** "Too complicated to implement" → Emphasize phased approach, start small
+- **Vendor Lock-in:** "What if I want to leave?" → Emphasize ownership, portability
+- **Results:** "How do I know it will work?" → Emphasize pilot phase, measurable metrics
 
 Format your output as:
-## Anticipated Objections & Responses
+## Anticipated Objections & Transparent Responses
 
-### Objection 1: [Likely objection]
+### Objection 1: [Likely objection based on their situation]
 **Your Response:**
-[Prepared response with proof points, specific to their situation]
+[Transparent, direct response using Revaya positioning]
 
 **Key Points to Emphasize:**
-- [Point 1]
-- [Point 2]
+- [Transparency/audit trail point]
+- [Specific to their situation]
+- [ROI/time-back framing]
+
+**Proof Point:**
+[Real example or statistic: "Mike's HVAC closed 23% of after-hours calls..."]
 
 [Repeat for each objection]
 
-Make responses empathetic but confident. Use their specific context to personalize responses.
+Make responses empathetic but confident. Use their specific context.
+Always emphasize: Transparency, specialized agents (not monoliths), measurable ROI (time saved).
+Lead with problems solved, not AI features.
 """
 )
 
@@ -232,7 +302,7 @@ research_team = ParallelAgent(
     sub_agents=[
         company_intelligence_agent,
         contact_research_agent,
-        website_analyzer_agent,
+        operations_analyzer_agent,
         competitive_context_agent
     ]
 )
@@ -273,7 +343,7 @@ Lead Details:
 
 ---
 
-Conduct comprehensive pre-call research and generate actionable call prep brief.
+Conduct comprehensive pre-call research focused on operational automation opportunities.
 """
 
     # Run the agent system
@@ -283,16 +353,16 @@ Conduct comprehensive pre-call research and generate actionable call prep brief.
 
 
 if __name__ == "__main__":
-    # Test the system
+    # Test the system with automation-focused example
     test_lead = {
         "first_name": "John",
         "last_name": "Smith",
         "email": "john@testcorp.com",
         "phone": "555-0123",
-        "company_name": "Test Corp",
+        "company_name": "Smith Real Estate Group",
         "website": "https://example.com",
-        "interested_in": "Website Redesign",
-        "pain_points": "Outdated website, not mobile friendly"
+        "interested_in": "AI Automation",
+        "pain_points": "Missing 90% of after-hours calls, manual appointment booking taking 10 hrs/week"
     }
 
     print("Running Phase 1 Research System...")

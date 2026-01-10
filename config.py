@@ -1,60 +1,133 @@
-"""Winnicki Digital - Business Configuration"""
+"""Revaya AI - Business Configuration"""
 
 COMPANY_INFO = {
-    "name": "Winnicki Digital",
-    "website": "https://www.winnickidigital.com",
-    "contact_email": "shannon@winnickidigital.com",
-    "services": ["Website Design", "SEO", "AI Automation", "Voice Agents"],
-    "platforms": ["Wix", "Shopify", "HighLevel", "Webflow"]
+    "name": "Revaya AI",
+    "website": "https://www.revayaai.com",
+    "contact_email": "shannon@revayaai.com",
+    "services": ["AI Automation", "Voice Agents", "Strategic Websites", "Operational Consulting"],
+    "core_value_prop": "Reclaim 10+ hours per week through transparent automation",
+    "positioning": "Transparent, auditable AI systems—not black boxes"
 }
 
-WEBSITE_PACKAGES = {
-    "single_page": {
-        "name": "Single Page Website",
-        "base_price": 700,
-        "pages": 1,
-        "additional_page_cost": 300,
-        "timeline": "1-2 weeks",
-        "features": ["Mobile Responsive", "Image Gallery", "Lead Capture Form", "Embedded Video", "Social Share", "You Own The Website"]
+# Revaya services focused on time reclamation and operational automation
+AUTOMATION_SERVICES = {
+    "voice_agent": {
+        "name": "AI Voice Agent",
+        "base_price": 2500,
+        "setup_time": "2-3 weeks",
+        "roi_metric": "After-hours calls answered, appointments booked automatically",
+        "features": [
+            "Custom conversation flows",
+            "Retell integration",
+            "n8n workflow orchestration",
+            "Full audit trails",
+            "Appointment booking",
+            "Lead qualification"
+        ]
     },
-    "small": {
-        "name": "Small Website",
-        "base_price": 1999,
-        "pages": 5,
-        "additional_page_cost": 300,
-        "blog_addon": 500,
-        "training_rate": 70,
-        "timeline": "2-3 weeks",
-        "features": ["Up to 5 Pages", "Mobile Responsive", "e-Commerce (lite)", "Ticketing System", "Google Search Console", "You Own The Website"]
+    "workflow_automation": {
+        "name": "Workflow Automation",
+        "hourly_rate": 150,
+        "typical_scope": "$3000-8000",
+        "setup_time": "3-6 weeks",
+        "roi_metric": "Hours saved per week, manual steps eliminated",
+        "features": [
+            "Specialized agents (microservices approach)",
+            "n8n visual workflows",
+            "Full transparency and audit trails",
+            "Rollback mechanisms",
+            "Custom integration",
+            "Ongoing optimization"
+        ]
     },
-    "large": {
-        "name": "Large Website",
-        "base_price": 3999,
-        "pages": 15,
-        "additional_page_cost": 200,
-        "blog_addon": 400,
-        "training_rate": 50,
-        "timeline": "4-6 weeks",
-        "features": ["Up to 15 Pages", "Full e-Commerce", "Ticketing System", "Google Search Console", "You Own The Website"]
+    "strategic_website": {
+        "name": "Strategic Website",
+        "base_price": 5000,
+        "setup_time": "4-6 weeks",
+        "roi_metric": "Visitor-to-client conversion rate",
+        "features": [
+            "Next.js + React",
+            "SEO optimized",
+            "Mobile-first responsive",
+            "Brand-aligned design",
+            "Performance optimized",
+            "You own the code"
+        ],
+        "partner_note": "Partnership with Winnicki Digital for design + SEO"
+    },
+    "discovery_consulting": {
+        "name": "Operational Audit & Discovery",
+        "session_price": 500,
+        "duration": "60-90 minutes",
+        "deliverable": "Operational audit report + prioritized roadmap",
+        "features": [
+            "Time audit (where hours disappear)",
+            "Workflow mapping",
+            "Bottleneck identification",
+            "ROI estimation (time back)",
+            "Phased implementation roadmap",
+            "Solution architecture"
+        ]
     }
 }
 
-ADDITIONAL_SERVICES = {
-    "seo": {"name": "SEO Services", "pricing": "Custom", "timeline": "3-6 months"},
-    "voice_agent": {"name": "AI Voice Agent", "pricing": "$2000-5000 setup", "timeline": "2-3 weeks"},
-    "ai_automation": {"name": "AI Automation", "hourly_rate": 150, "timeline": "Varies"}
+# Revaya pricing philosophy: ROI-based (time saved), not feature-based
+PRICING_PRINCIPLES = {
+    "roi_focus": "Frame pricing around time reclaimed, not features",
+    "transparency": "Full breakdown: setup, monthly, per-transaction costs",
+    "time_metric": "Calculate cost per hour saved (e.g., $5K / 10 hrs/week = $12/hr)",
+    "avoid_guarantees": "Promise time saved, not revenue outcomes (too many variables)",
+    "phased_approach": "Start small, prove value, expand",
+    "ongoing_partnership": "Retainer for maintenance, optimization, expansion"
 }
 
 EMAIL_CONFIG = {
-    "recipient": "shannon@winnickidigital.com",
-    "from_email": "system@winnickidigital.com"
+    "recipient": "shannon@revayaai.com",
+    "from_email": "system@revayaai.com",
+    "bcc": None  # Optional BCC for backup
 }
 
 SLACK_CONFIG = {
-    "channel": "wd-leads",
+    "channel": "revaya-leads",
     "webhook_url": "ENV_VAR"
 }
 
 GOOGLE_DRIVE_CONFIG = {
-    "folder_name": "Winnicki Digital Agent Proposals"
+    "folder_name": "Revaya AI - Client Proposals"
 }
+
+# Discovery framework aligned with Revaya positioning
+DISCOVERY_QUESTIONS = {
+    "time_audit": [
+        "Where is your time actually going each week?",
+        "What takes 30 minutes that you do every day?",
+        "What workflow makes you want to scream?"
+    ],
+    "pain_points": [
+        "What's the operational bottleneck that limits growth?",
+        "Where are manual handoffs breaking?",
+        "What would give you 10 hours back per week?"
+    ],
+    "opportunity_cost": [
+        "What could you do with those 10 hours?",
+        "What's this costing you in revenue?",
+        "What growth opportunity are you missing?"
+    ],
+    "alignment": [
+        "Does this solution feel forced or natural?",
+        "What are we actually building toward?",
+        "What does success look like in 6 months?"
+    ]
+}
+
+# Red flags for client qualification
+CLIENT_RED_FLAGS = [
+    "Guarantees on revenue outcomes",
+    "Unrealistic timelines with no flexibility",
+    "Scope creep without budget discussion",
+    "Price shopping only",
+    "Disrespectful communication",
+    "Can't articulate the problem",
+    "Wants to skip discovery",
+    "History of churning vendors"
+]

@@ -1,92 +1,55 @@
 #!/bin/bash
 
-# Winnicki Digital - Cloud Run Deployment with Secret Manager
-# Project: self-hosted-468515
-# This script uses Google Cloud Secret Manager for secure credential storage
+# Revaya AI - Secure Cloud Run Deployment Script
+# Uses Google Cloud Secret Manager for credentials
 
 set -e
 
-echo "╔═══════════════════════════════════════════════════════════╗"
-echo "║   WINNICKI DIGITAL - SECURE DEPLOYMENT                   ║"
-echo "╚═══════════════════════════════════════════════════════════╝"
-echo ""
-
-# Configuration
-PROJECT_ID="self-hosted-468515"
-SERVICE_NAME="winnicki-intake"
+PROJECT_ID="revaya-ai-systems"
+SERVICE_NAME="revaya-intake"
 REGION="us-central1"
 IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 
+echo "🔐 Deploying Revaya Intake System with Secret Manager..."
+
 # Check if .env file exists
 if [ ! -f .env ]; then
-    echo "❌ .env file not found"
-    echo "Please create .env file with your credentials"
+    echo "❌ Error: .env file not found"
+    echo "Please create .env from .env.example and add your credentials"
     exit 1
 fi
 
-# Load environment variables
-source .env
+# Load environment variables from .env
+export $(cat .env | xargs)
 
-# Set project
-gcloud config set project ${PROJECT_ID}
+# Create secrets if they don't exist
+echo "📝 Creating/updating secrets in Secret Manager..."
 
-# Enable Secret Manager API
-echo "🔧 Enabling Secret Manager API..."
-gcloud services enable secretmanager.googleapis.com
+echo -n "$GOOGLE_API_KEY" | gcloud secrets create google-api-key --data-file=- --replication-policy=automatic 2>/dev/null || \
+echo -n "$GOOGLE_API_KEY" | gcloud secrets versions add google-api-key --data-file=-
 
-# Create secrets (if they don't exist)
-echo "🔐 Creating secrets..."
+echo -n "$SENDGRID_API_KEY" | gcloud secrets create sendgrid-api-key --data-file=- --replication-policy=automatic 2>/dev/null || \
+echo -n "$SENDGRID_API_KEY" | gcloud secrets versions add sendgrid-api-key --data-file=-
 
-create_secret() {
-    SECRET_NAME=$1
-    SECRET_VALUE=$2
+echo -n "$SLACK_WEBHOOK_URL" | gcloud secrets create slack-webhook-url --data-file=- --replication-policy=automatic 2>/dev/null || \
+echo -n "$SLACK_WEBHOOK_URL" | gcloud secrets versions add slack-webhook-url --data-file=-
 
-    if gcloud secrets describe ${SECRET_NAME} &>/dev/null; then
-        echo "  ↻ Updating ${SECRET_NAME}..."
-        echo -n "${SECRET_VALUE}" | gcloud secrets versions add ${SECRET_NAME} --data-file=-
-    else
-        echo "  + Creating ${SECRET_NAME}..."
-        echo -n "${SECRET_VALUE}" | gcloud secrets create ${SECRET_NAME} --data-file=-
-    fi
-}
+# Set default email addresses
+FROM_EMAIL=${FROM_EMAIL:-"system@revayaai.com"}
+TO_EMAIL=${TO_EMAIL:-"shannon@revayaai.com"}
 
-create_secret "winnicki-google-api-key" "${GOOGLE_API_KEY}"
-create_secret "winnicki-sendgrid-api-key" "${SENDGRID_API_KEY}"
-create_secret "winnicki-slack-webhook" "${SLACK_WEBHOOK_URL}"
-create_secret "winnicki-from-email" "${FROM_EMAIL}"
-create_secret "winnicki-to-email" "${TO_EMAIL}"
+echo "📦 Building container image..."
+gcloud builds submit --tag $IMAGE_NAME
 
-# Build container
-echo "🏗️  Building container..."
-gcloud builds submit --tag ${IMAGE_NAME}
-
-# Deploy with secrets
-echo "🚀 Deploying with secrets..."
-gcloud run deploy ${SERVICE_NAME} \
-  --image ${IMAGE_NAME} \
+echo "🌐 Deploying to Cloud Run with secrets..."
+gcloud run deploy $SERVICE_NAME \
+  --image $IMAGE_NAME \
   --platform managed \
-  --region ${REGION} \
+  --region $REGION \
   --allow-unauthenticated \
-  --memory 512Mi \
-  --cpu 1 \
-  --timeout 300 \
-  --max-instances 10 \
-  --set-secrets "GOOGLE_API_KEY=winnicki-google-api-key:latest" \
-  --set-secrets "SENDGRID_API_KEY=winnicki-sendgrid-api-key:latest" \
-  --set-secrets "SLACK_WEBHOOK_URL=winnicki-slack-webhook:latest" \
-  --set-secrets "FROM_EMAIL=winnicki-from-email:latest" \
-  --set-secrets "TO_EMAIL=winnicki-to-email:latest" \
-  --set-env-vars "PORT=8080"
+  --set-secrets GOOGLE_API_KEY=google-api-key:latest,SENDGRID_API_KEY=sendgrid-api-key:latest,SLACK_WEBHOOK_URL=slack-webhook-url:latest \
+  --set-env-vars FROM_EMAIL="$FROM_EMAIL",TO_EMAIL="$TO_EMAIL"
 
-# Get service URL
-echo ""
-echo "✅ Secure deployment complete!"
-echo ""
-SERVICE_URL=$(gcloud run services describe ${SERVICE_NAME} --platform managed --region ${REGION} --format 'value(status.url)')
-echo "🌐 Service URL: ${SERVICE_URL}"
-echo ""
-echo "Next steps:"
-echo "  1. Test: curl ${SERVICE_URL}/health"
-echo "  2. View logs: gcloud run logs read --service=${SERVICE_NAME}"
-echo "  3. API docs: ${SERVICE_URL}/docs"
-echo ""
+echo "✅ Deployment complete!"
+echo "🔗 Service URL:"
+gcloud run services describe $SERVICE_NAME --platform managed --region $REGION --format 'value(status.url)'

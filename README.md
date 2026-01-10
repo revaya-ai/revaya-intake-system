@@ -1,44 +1,44 @@
-# Winnicki Digital - AI Intake & Intelligence System
+# Revaya AI - Client Intake & Intelligence System
 
-A two-phase AI-powered system for automated sales intelligence and proposal generation.
+A two-phase AI-powered system for automated discovery and proposal generation focused on operational automation.
 
 ## 🎯 Overview
 
-This system automates the entire sales process from initial lead to proposal delivery:
+This system automates the entire client intake process from initial lead to proposal delivery:
 
 **Phase 1: Pre-Call Intelligence** (Automated)
-- 6 AI agents research company, contact, website, and competitors
-- Generate smart discovery questions and objection handling
+- 6 AI agents research company, contact, operations, and pain points
+- Generate discovery questions aligned with "Where is your time disappearing?" framework
 - Email complete brief to Shannon
-- Notify Slack (#wd-leads)
+- Notify Slack (#revaya-leads)
 - Save to Google Drive
 
-**Phase 2: Proposal Generation** (Manual trigger after call)
-- Input discovery answers from sales call
-- 4 AI agents generate complete proposal with pricing and timeline
+**Phase 2: Proposal Generation** (Manual trigger after discovery call)
+- Input discovery answers from operational audit
+- 4 AI agents generate complete proposal with ROI framing and timeline
 - Email proposal for review
 - Notify Slack and save to Drive
 
 ## 🏗️ Architecture
 
 ### Phase 1: Research Agents (Parallel Execution)
-1. **CompanyIntelligenceAgent** - Company profile and market position
-2. **ContactResearchAgent** - Contact background and priorities
-3. **WebsiteAnalyzerAgent** - Current website analysis
-4. **CompetitiveContextAgent** - Competitive landscape
-5. **RequirementsGathererAgent** - Targeted discovery questions
-6. **ObjectionAnticipatorAgent** - Anticipated objections with responses
+1. **CompanyIntelligenceAgent** - Company profile and operational bottlenecks
+2. **ContactResearchAgent** - Contact background and decision-making authority
+3. **OperationsAnalyzerAgent** - Current operational workflows and time drains
+4. **CompetitiveContextAgent** - Competitive landscape and market position
+5. **RequirementsGathererAgent** - Discovery questions focused on time reclamation
+6. **ObjectionAnticipatorAgent** - Anticipated objections with transparent responses
 
 ### Phase 2: Proposal Agents (Sequential Execution)
-1. **TechnicalScoperAgent** - Platform and feature recommendations
-2. **PricingCalculatorAgent** - Accurate pricing breakdown
-3. **TimelineEstimatorAgent** - Project timeline and phases
-4. **ProposalWriterAgent** - Complete professional proposal
+1. **TechnicalScoperAgent** - Automation architecture and specialized agents
+2. **PricingCalculatorAgent** - ROI-based pricing (time saved, not just features)
+3. **TimelineEstimatorAgent** - Phased implementation roadmap
+4. **ProposalWriterAgent** - Complete proposal with transparency focus
 
 ## 📋 Prerequisites
 
 - Python 3.11+
-- Google Cloud account (project: `self-hosted-468515`)
+- Google Cloud account (project: `revaya-ai-systems`)
 - Google AI API key
 - SendGrid API key (for email)
 - Slack webhook URL (for notifications)
@@ -49,8 +49,8 @@ This system automates the entire sales process from initial lead to proposal del
 ### 1. Clone and Setup
 
 ```bash
-git clone <repository-url>
-cd winnicki-intake-system
+git clone https://github.com/revaya-ai/revaya-intake-system.git
+cd revaya-intake-system
 ```
 
 ### 2. Install Dependencies
@@ -70,8 +70,8 @@ Edit `.env` with your credentials:
 ```env
 GOOGLE_API_KEY=your_google_api_key
 SENDGRID_API_KEY=your_sendgrid_key
-FROM_EMAIL=system@winnickidigital.com
-TO_EMAIL=shannon@winnickidigital.com
+FROM_EMAIL=system@revayaai.com
+TO_EMAIL=shannon@revayaai.com
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 PORT=8000
 ```
@@ -101,8 +101,8 @@ curl -X POST http://localhost:8000/initial-lead \
     "phone": "555-0123",
     "company_name": "Test Corp",
     "website": "https://example.com",
-    "interested_in": "Website Redesign",
-    "pain_points": "Outdated website, not mobile friendly"
+    "interested_in": "AI Automation",
+    "pain_points": "Manual order processing taking 15 hours/week"
   }'
 ```
 
@@ -116,9 +116,9 @@ curl -X POST http://localhost:8000/generate-proposal \
       "company_name": "Test Corp",
       "contact_name": "John Smith",
       "email": "john@testcorp.com",
-      "industry": "Professional Services"
+      "industry": "E-commerce"
     },
-    "discovery_answers": "Need 10-page website with blog, e-commerce, 6-week timeline, $3000-5000 budget"
+    "discovery_answers": "Need order processing automation, inventory alerts, customer service agent. Currently spending 15 hrs/week on manual tasks. Budget $5-8K, 4-6 week timeline acceptable."
   }'
 ```
 
@@ -133,7 +133,7 @@ curl -X POST http://localhost:8000/test-integrations
 ### Build
 
 ```bash
-docker build -t winnicki-intake .
+docker build -t revaya-intake .
 ```
 
 ### Run
@@ -143,7 +143,7 @@ docker run -p 8000:8080 \
   -e GOOGLE_API_KEY=your_key \
   -e SENDGRID_API_KEY=your_key \
   -e SLACK_WEBHOOK_URL=your_webhook \
-  winnicki-intake
+  revaya-intake
 ```
 
 ## ☁️ Google Cloud Run Deployment
@@ -155,8 +155,8 @@ docker run -p 8000:8080 \
 export GOOGLE_API_KEY=your_key
 export SENDGRID_API_KEY=your_key
 export SLACK_WEBHOOK_URL=your_webhook
-export FROM_EMAIL=system@winnickidigital.com
-export TO_EMAIL=shannon@winnickidigital.com
+export FROM_EMAIL=system@revayaai.com
+export TO_EMAIL=shannon@revayaai.com
 
 # Deploy
 ./deploy.sh
@@ -179,11 +179,11 @@ cp .env.example .env
 
 ```bash
 # Build
-gcloud builds submit --tag gcr.io/self-hosted-468515/winnicki-intake
+gcloud builds submit --tag gcr.io/revaya-ai-systems/revaya-intake
 
 # Deploy
-gcloud run deploy winnicki-intake \
-  --image gcr.io/self-hosted-468515/winnicki-intake \
+gcloud run deploy revaya-intake \
+  --image gcr.io/revaya-ai-systems/revaya-intake \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
@@ -193,7 +193,7 @@ gcloud run deploy winnicki-intake \
 ## 📁 Project Structure
 
 ```
-winnicki-intake-system/
+revaya-intake-system/
 ├── api.py                      # FastAPI application
 ├── config.py                   # Business configuration
 ├── phase1_research.py          # Phase 1: 6 research agents
@@ -229,8 +229,8 @@ Phase 1: Generate pre-call intelligence brief
   "phone": "555-0123",
   "company_name": "Test Corp",
   "website": "https://example.com",
-  "interested_in": "Website Redesign",
-  "pain_points": "Site is outdated"
+  "interested_in": "AI Automation",
+  "pain_points": "Manual order processing"
 }
 ```
 
@@ -255,7 +255,7 @@ Phase 2: Generate complete proposal
     "company_name": "Test Corp",
     "email": "john@testcorp.com"
   },
-  "discovery_answers": "10 pages, blog, e-commerce..."
+  "discovery_answers": "Need inventory automation, 15 hrs/week manual work..."
 }
 ```
 
@@ -277,8 +277,7 @@ Phase 2: Generate complete proposal
 ### Business Configuration (config.py)
 
 Edit `config.py` to customize:
-- Website packages and pricing
-- Additional services
+- Automation services and pricing (ROI-based, not feature-based)
 - Company information
 - Email recipients
 - Slack channels
@@ -294,7 +293,7 @@ Each agent can be customized by editing:
 ### View Logs (Cloud Run)
 
 ```bash
-gcloud run logs read --service=winnicki-intake --limit=100
+gcloud run logs read --service=revaya-intake --limit=100
 ```
 
 ### View Logs (Local)
@@ -366,12 +365,12 @@ python api.py
 
 ## 📄 License
 
-Proprietary - Winnicki Digital
+Proprietary - Revaya AI
 
 ## 👥 Contact
 
-Shannon Winnicki - shannon@winnickidigital.com
-Website: https://www.winnickidigital.com
+Shannon Winnicki - shannon@revayaai.com
+Website: https://www.revayaai.com
 
 ## 🚀 Deployment Checklist
 
@@ -395,5 +394,5 @@ Website: https://www.winnickidigital.com
 - [ ] Create dashboard for tracking leads
 - [ ] Add analytics and reporting
 - [ ] Implement A/B testing for proposals
-- [ ] Add multi-language support
+- [ ] Add ROI calculator for discovery calls
 - [ ] Create mobile app interface

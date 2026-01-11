@@ -9,8 +9,11 @@ from typing import List, Dict, Any, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 
-# Configure Google AI
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+# Configure Google AI with REST transport to avoid gRPC SSL issues
+genai.configure(
+    api_key=os.getenv("GOOGLE_API_KEY"),
+    transport="rest"
+)
 
 
 class Agent:

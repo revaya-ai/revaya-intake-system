@@ -21,7 +21,7 @@ class Agent:
         self.instructions = instructions
         self.output_key = output_key
         self.tools = tools or []
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        self.model = genai.GenerativeModel('gemini-2.0-flash')
 
     def run(self, context: str, shared_state: Optional[Dict] = None) -> Dict[str, Any]:
         """

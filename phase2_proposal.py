@@ -25,8 +25,8 @@ Revaya's Approach: Specialized agents (microservices), not monolithic systems.
 Available Solutions:
 - **Voice Agent**: After-hours calls, appointment booking, lead qualification ($2500 base)
 - **Workflow Automation**: Order processing, inventory, customer service ($3K-8K typical)
-- **Strategic Website**: Next.js, SEO-optimized, conversion-focused ($5K base)
-- **Discovery Consulting**: Operational audit, roadmap creation ($500/session)
+- **Strategic Website**: Next.js, SEO-optimized, conversion-focused ($900-$5.2k typical)
+- **Discovery Consulting**: Operational audit, roadmap creation ($1500/session)
 
 Your tasks:
 1. Design automation architecture using specialized agents:
@@ -126,6 +126,86 @@ Company Info for Context:
 {json.dumps(COMPANY_INFO, indent=2)}
 
 Remember: We build transparent systems you can understand, not black boxes.
+"""
+)
+# Website Scoper Agent (for website projects)
+website_scoper_agent = Agent(
+    name="WebsiteScopingAgent",
+    output_key="website_scope",
+    instructions=f"""
+You are a website scoping specialist for Revaya AI. Analyze the client's needs and recommend the appropriate website tier.
+
+Available Website Tiers:
+
+**Single Page Website - $900**
+Timeline: 1 week
+Best for: Landing pages, coming soon pages, simple online presence
+Includes: 1 page, mobile responsive, image gallery, lead capture form, embedded video, social share, website training
+Add-ons: Additional pages ($300 each), training ($70/hr)
+
+**Small Website - $2,499**
+Timeline: 2 weeks  
+Best for: Service businesses, consultants, coaches, small ecommerce shops
+Includes: Up to 5 pages, mobile responsive, image gallery, lead capture, lite e-commerce, ticketing system, embedded video, social share, Google Search Console, Google Business Profile, website training
+Add-ons: Additional pages ($300 each), blog setup ($500), training ($70/hr)
+
+**Large Website - $5,199**
+Timeline: 4-6 weeks
+Best for: Established businesses needing comprehensive online presence
+Includes: Up to 15 pages, all Small Website features plus advanced functionality
+
+Your tasks:
+
+1. Recommend the appropriate tier based on:
+   - Number of pages needed
+   - E-commerce requirements
+   - Current website situation (redesign vs new)
+   - Timeline constraints
+   - Budget indicators
+
+2. Identify must-have vs nice-to-have features
+
+3. Suggest relevant add-ons:
+   - Extra pages if they need more than tier includes
+   - Blog if content marketing is mentioned
+   - Extra training if team needs onboarding
+
+4. Calculate total investment including add-ons
+
+5. Note platform recommendations:
+   - Wix (easiest for client to maintain)
+   - Webflow (more design control)
+   - Next.js (custom, SEO-optimized for specific needs)
+
+Format as markdown:
+
+## Website Recommendation
+
+### Recommended Tier: [Tier Name] - $[Price]
+**Timeline:** [Timeline]
+**Why This Tier:** [Reasoning based on their needs]
+
+### What's Included
+- [Feature 1]
+- [Feature 2]
+...
+
+### Recommended Add-ons
+- [Add-on]: $[price] - [why they need it]
+
+### Total Investment
+**Base:** $[tier price]
+**Add-ons:** $[total add-ons]
+**Total:** $[total]
+
+### Platform Recommendation
+**Suggested Platform:** [Platform]
+**Rationale:** [Why this platform fits their needs and technical comfort]
+
+### Next Steps
+1. [Step 1]
+2. [Step 2]
+...
 """
 )
 
@@ -515,8 +595,8 @@ We stay. We grow with you.
 
 Shannon Winnicki
 Founder, Revaya AI
-shannon@revayaai.com
-https://www.revayaai.com
+shannon@revaya.ai
+https://www.revaya.ai
 
 *Proposal valid for 30 days*
 
@@ -539,26 +619,39 @@ pricing_timeline_team = ParallelAgent(
     ]
 )
 
-# Sequential workflow: scope → pricing/timeline → proposal
-phase2_system = SequentialAgent(
-    name="Phase2ProposalSystem",
-    sub_agents=[
-        technical_scoper_agent,
-        pricing_timeline_team,
-        proposal_writer_agent
-    ]
-)
-
 
 def run_phase2_proposal(client_info: Dict[str, Any], discovery_answers: str) -> Dict[str, Any]:
     """
     Main entry point for Phase 2 proposal generation
-    Takes client info and discovery answers, returns complete proposal
+    Routes to appropriate agents based on project type
     """
+    # Determine project type from client_info
+    interested_in = client_info.get("interested_in", "").lower()
+    
+    # Choose which scoping agent to use
+    if "website" in interested_in or "web" in interested_in:
+        scoping_agent = website_scoper_agent
+        project_type = "website"
+    else:
+        scoping_agent = technical_scoper_agent
+        project_type = "automation"
+    
+    # Build dynamic agent sequence
+    phase2_system_dynamic = SequentialAgent(
+        name="Phase2ProposalSystem",
+        sub_agents=[
+            scoping_agent,
+            pricing_timeline_team,
+            proposal_writer_agent
+        ]
+    )
+    
     # Format context
     context = f"""
 CLIENT INFORMATION:
 {json.dumps(client_info, indent=2)}
+
+PROJECT TYPE: {project_type}
 
 DISCOVERY CALL NOTES:
 {discovery_answers}
@@ -566,14 +659,12 @@ DISCOVERY CALL NOTES:
 ---
 
 Generate a complete, professional proposal with ROI-based pricing and phased implementation.
-Focus on time reclamation and transparent automation systems.
 """
 
-    # Run the agent system
-    results = phase2_system.run(context)
+    # Run the appropriate agent system
+    results = phase2_system_dynamic.run(context)
 
     return results
-
 
 if __name__ == "__main__":
     # Test the system with automation-focused example

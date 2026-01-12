@@ -1,5 +1,5 @@
 """
-Winnicki Digital - AI Intake & Intelligence System
+Revaya AI - AI Intake & Intelligence System
 FastAPI Application
 
 Two main endpoints:
@@ -32,8 +32,8 @@ from config import COMPANY_INFO
 
 # Initialize FastAPI
 app = FastAPI(
-    title="Winnicki Digital Intake API",
-    description="AI-powered intake and proposal system for Winnicki Digital",
+    title="Revaya AI Intake API",
+    description="AI-powered intake and proposal system for Revaya AI",
     version="2.0.0"
 )
 
@@ -112,7 +112,7 @@ def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "service": "Winnicki Digital Intake System",
+        "service": "Revaya Intake System",
         "version": "2.0.0",
         "timestamp": datetime.now().isoformat(),
         "company": COMPANY_INFO["name"]
@@ -133,7 +133,7 @@ def detailed_health():
 
     return {
         "status": "healthy" if all_configured else "degraded",
-        "service": "Winnicki Digital Intake System",
+        "service": "Revaya AI Intake System",
         "version": "2.0.0",
         "timestamp": datetime.now().isoformat(),
         "configuration": config_status,
@@ -171,6 +171,7 @@ async def initial_lead(request: Request, background_tasks: BackgroundTasks):
         lead = LeadData(**data)
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"Validation error: {str(e)}")
+    
     try:
         print(f"📥 New lead received: {lead.company_name}")
 
@@ -185,55 +186,43 @@ async def initial_lead(request: Request, background_tasks: BackgroundTasks):
         print("📝 Compiling call prep brief...")
         brief = compile_call_prep_brief(agent_results, lead_dict)
 
-        # Background tasks for email, Slack, and Drive
+        # Prepare background task parameters
         company_name = lead.company_name or "Prospect"
+        filename = f"CallPrep_{company_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
 
-        # Send email
-        print("📧 Sending email...")
-        email_result = send_email(
+        # Queue background tasks (run after response is sent)
+        print("📧 Queuing email task...")
+        background_tasks.add_task(
+            send_email,
             content_text=brief,
             subject=f"Call Prep Brief: {company_name}"
         )
+        
+        print("💬 Queuing Slack notification...")
+        background_tasks.add_task(send_slack_lead_notification, lead_dict)
+        
+        print("💾 Queuing Google Drive save...")
+        background_tasks.add_task(save_to_drive, brief, filename)
 
-        # Send Slack notification
-        print("💬 Sending Slack notification...")
-        slack_result = send_slack_lead_notification(lead_dict)
-
-        # Save to Google Drive
-        print("💾 Saving to Google Drive...")
-        filename = f"CallPrep_{company_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
-        drive_result = save_to_drive(brief, filename)
-
-        print("✅ Phase 1 complete!")
+        print("✅ Phase 1 complete! Background tasks queued.")
 
         return {
             "success": True,
-            "message": "Call prep brief generated successfully",
+            "message": "Call prep brief generated successfully. Email and notifications queued.",
             "lead": {
                 "company": company_name,
                 "contact": f"{lead.first_name} {lead.last_name}",
                 "email": lead.email
             },
-            "brief": brief,
-            "email_sent": email_result.get("success", False),
-            "email_details": email_result,
-            "slack_notified": slack_result.get("success", False),
-            "slack_details": slack_result,
-            "drive_link": drive_result.get("drive_link"),
-            "drive_details": drive_result,
-            "timestamp": datetime.now().isoformat()
+            "brief_preview": brief[:500] + "...",
+            "tasks_queued": ["email", "slack", "drive"]
         }
 
     except Exception as e:
-        print(f"❌ Error in initial_lead: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "success": False,
-                "error": str(e),
-                "message": "Failed to generate call prep brief"
-            }
-        )
+        print(f"❌ Error processing lead: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))            
 
 
 @app.post("/generate-proposal")

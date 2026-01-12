@@ -139,9 +139,9 @@ def markdown_to_html(markdown_text: str) -> str:
         <div style="white-space: pre-wrap;">{markdown_text}</div>
         <div class="footer">
             <p>
-                <strong>Winnicki Digital</strong><br>
-                Email: shannon@winnickidigital.com<br>
-                Web: <a href="https://www.winnickidigital.com">www.winnickidigital.com</a>
+                <strong>Revaya AI</strong><br>
+                Email: shannon@revaya.ai<br>
+                Web: <a href="https://www.revaya.ai">www.revaya.ai</a>
             </p>
         </div>
     </body>
@@ -450,8 +450,8 @@ def compile_call_prep_brief(agent_results: dict, lead_data: dict) -> str:
 
 ---
 
-*Prepared by Winnicki Digital AI System*
-*Contact: shannon@winnickidigital.com*
+*Prepared by Revaya AI*
+*Contact: shannon@revaya.ai*
 """
 
     return brief
@@ -462,7 +462,7 @@ if __name__ == "__main__":
     print("Testing utility functions...")
 
     # Test Slack
-    result = notify_slack("Test message from Winnicki Digital system")
+    result = notify_slack("Test message from Revaya AI system")
     print(f"Slack test: {result}")
 
     # Test local file save

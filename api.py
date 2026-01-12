@@ -10,7 +10,7 @@ Two main endpoints:
 import os
 from datetime import datetime
 from typing import Optional
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from dotenv import load_dotenv
@@ -144,7 +144,7 @@ def detailed_health():
 
 
 @app.post("/initial-lead")
-async def initial_lead(lead: LeadData, background_tasks: BackgroundTasks):
+async def initial_lead(request: Request, background_tasks: BackgroundTasks):
     """
     Phase 1: Generate pre-call intelligence brief
 
@@ -157,6 +157,20 @@ async def initial_lead(lead: LeadData, background_tasks: BackgroundTasks):
 
     Returns the complete brief immediately.
     """
+    # Get raw JSON body
+    body = await request.json()
+    
+    # Unwrap if Wix format (wrapped in "data")
+    if "data" in body and isinstance(body["data"], dict):
+        data = body["data"]
+    else:
+        data = body
+    
+    # Convert to LeadData model for validation
+    try:
+        lead = LeadData(**data)
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Validation error: {str(e)}")
     try:
         print(f"📥 New lead received: {lead.company_name}")
 

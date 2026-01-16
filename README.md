@@ -369,8 +369,8 @@ Proprietary - Revaya AI
 
 ## 👥 Contact
 
-Shannon Winnicki - shannon@revayaai.com
-Website: https://www.revayaai.com
+Shannon Winnicki - shannon@revaya.ai
+Website: https://www.revaya.ai
 
 ## 🚀 Deployment Checklist
 

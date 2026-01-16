@@ -5,6 +5,11 @@ Six research agents that analyze company, operations, and automation opportuniti
 
 from agent_framework import Agent, ParallelAgent, SequentialAgent, google_search, web_fetch
 from typing import Dict, Any
+from phase1_enhanced_agents import (
+    digital_footprint_agent,
+    project_history_agent,
+    network_intelligence_agent
+)
 
 
 # Agent 1: Company Intelligence (Updated for Operations Focus)
@@ -296,14 +301,17 @@ Lead with problems solved, not AI features.
 
 
 # Build the workflow structure
-# Parallel research team (agents 1-4 run simultaneously)
+# Parallel research team (agents 1-7 run simultaneously)
 research_team = ParallelAgent(
     name="ResearchTeam",
     sub_agents=[
         company_intelligence_agent,
         contact_research_agent,
         operations_analyzer_agent,
-        competitive_context_agent
+        competitive_context_agent,
+        digital_footprint_agent,      # NEW: Digital presence & content analysis
+        project_history_agent,        # NEW: Career track record & achievements
+        network_intelligence_agent    # NEW: Network mapping & company news
     ]
 )
 

@@ -53,6 +53,7 @@ app.add_middleware(
 
 class LeadData(BaseModel):
     """Lead data from intake form"""
+    # Core contact fields
     first_name: str
     last_name: str
     email: EmailStr
@@ -63,6 +64,36 @@ class LeadData(BaseModel):
     pain_points: Optional[str] = None
     referred_by: Optional[str] = None
 
+    # Company details
+    company_size: Optional[str] = None
+    industry: Optional[str] = None
+
+    # Pain & cost
+    pain_cost_monthly: Optional[str] = None
+
+    # Workflow & operations
+    workflow_description: Optional[str] = None
+    repetitive_tasks: Optional[str] = None
+    current_tools: Optional[str] = None
+
+    # Decision context
+    decision_makers: Optional[str] = None
+    past_vendors: Optional[str] = None
+    timeline: Optional[str] = None
+    budget_range: Optional[str] = None
+
+    # Goals & success
+    success_90_days: Optional[str] = None
+    what_prompted_call: Optional[str] = None
+
+    # Tech readiness
+    tech_comfort_level: Optional[int] = None
+    tried_ai_before: Optional[str] = None
+
+    # Source tracking
+    lead_source: Optional[str] = None
+    linkedin_url: Optional[str] = None
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -72,9 +103,25 @@ class LeadData(BaseModel):
                 "phone": "555-0123",
                 "company_name": "Test Corp",
                 "website": "https://example.com",
-                "interested_in": "Website Redesign",
-                "pain_points": "Site is outdated and not mobile friendly",
-                "referred_by": "Google Search"
+                "interested_in": "AI Automation",
+                "pain_points": "Missing after-hours calls, manual appointment booking taking 10 hrs/week",
+                "referred_by": "Google Search",
+                "company_size": "11-50",
+                "industry": "Real Estate",
+                "pain_cost_monthly": "$5,000-10,000 in missed opportunities",
+                "workflow_description": "Leads come in via website, manually entered into CRM, follow-up calls scheduled manually",
+                "repetitive_tasks": "Data entry, appointment confirmations, follow-up emails",
+                "current_tools": "Salesforce, Google Calendar, Gmail",
+                "decision_makers": "CEO and Operations Director",
+                "past_vendors": "Tried Zapier but too limited",
+                "timeline": "Want to start within 30 days",
+                "budget_range": "$2,000-5,000/month",
+                "success_90_days": "Reduce manual work by 50%, never miss an after-hours call",
+                "what_prompted_call": "Lost a big deal because we didn't respond fast enough",
+                "tech_comfort_level": 3,
+                "tried_ai_before": "Used ChatGPT for writing but nothing operational",
+                "lead_source": "LinkedIn Ad",
+                "linkedin_url": "https://linkedin.com/in/johnsmith"
             }
         }
 

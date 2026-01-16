@@ -8,15 +8,67 @@ Two main endpoints:
 """
 
 import os
+import hashlib
 from datetime import datetime
 from typing import Optional
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from dotenv import load_dotenv
+from collections import OrderedDict
+import threading
 
 # Load environment variables
 load_dotenv()
+
+# ============================================================================
+# REQUEST DEDUPLICATION
+# ============================================================================
+# Simple in-memory cache to prevent duplicate processing of the same lead
+# (handles Railway retries, multiple instances, or form double-submissions)
+
+class DeduplicationCache:
+    """Thread-safe cache for request deduplication with TTL"""
+
+    def __init__(self, max_size: int = 1000, ttl_seconds: int = 300):
+        self.cache = OrderedDict()
+        self.max_size = max_size
+        self.ttl_seconds = ttl_seconds
+        self.lock = threading.Lock()
+
+    def _generate_key(self, email: str, company: str) -> str:
+        """Generate a unique key for deduplication"""
+        # Use email + company + 5-minute time window
+        time_window = datetime.now().strftime("%Y%m%d%H") + str(datetime.now().minute // 5)
+        raw_key = f"{email.lower()}:{company.lower() if company else 'unknown'}:{time_window}"
+        return hashlib.md5(raw_key.encode()).hexdigest()
+
+    def is_duplicate(self, email: str, company: str) -> bool:
+        """Check if this request is a duplicate (already processed recently)"""
+        key = self._generate_key(email, company)
+        now = datetime.now().timestamp()
+
+        with self.lock:
+            # Clean expired entries
+            expired_keys = [k for k, v in self.cache.items() if now - v > self.ttl_seconds]
+            for k in expired_keys:
+                del self.cache[k]
+
+            # Check if key exists
+            if key in self.cache:
+                return True
+
+            # Add new key
+            self.cache[key] = now
+
+            # Enforce max size (remove oldest)
+            while len(self.cache) > self.max_size:
+                self.cache.popitem(last=False)
+
+            return False
+
+# Initialize deduplication cache (5-minute window for duplicates)
+dedup_cache = DeduplicationCache(max_size=1000, ttl_seconds=300)
 
 # Import our custom modules
 from phase1_research import run_phase1_research
@@ -218,7 +270,21 @@ async def initial_lead(request: Request, background_tasks: BackgroundTasks):
         lead = LeadData(**data)
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"Validation error: {str(e)}")
-    
+
+    # Check for duplicate submission (prevents multiple emails/Slack from retries)
+    if dedup_cache.is_duplicate(lead.email, lead.company_name):
+        print(f"⚠️ Duplicate request detected for {lead.email} - skipping processing")
+        return {
+            "success": True,
+            "message": "Lead already processed (duplicate request detected)",
+            "duplicate": True,
+            "lead": {
+                "company": lead.company_name or "Prospect",
+                "contact": f"{lead.first_name} {lead.last_name}",
+                "email": lead.email
+            }
+        }
+
     try:
         print(f"📥 New lead received: {lead.company_name}")
 

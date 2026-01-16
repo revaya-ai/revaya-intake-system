@@ -7,7 +7,7 @@ A two-phase AI-powered system for automated discovery and proposal generation fo
 This system automates the entire client intake process from initial lead to proposal delivery:
 
 **Phase 1: Pre-Call Intelligence** (Automated)
-- 6 AI agents research company, contact, operations, and pain points
+- 9 AI agents research company, contact, operations, digital footprint, and pain points
 - Generate discovery questions aligned with "Where is your time disappearing?" framework
 - Email complete brief to Shannon
 - Notify Slack (#revaya-leads)
@@ -28,6 +28,9 @@ This system automates the entire client intake process from initial lead to prop
 4. **CompetitiveContextAgent** - Competitive landscape and market position
 5. **RequirementsGathererAgent** - Discovery questions focused on time reclamation
 6. **ObjectionAnticipatorAgent** - Anticipated objections with transparent responses
+7. **DigitalFootprintAnalyzer** - Online presence, content style, and communication patterns
+8. **ProjectHistoryResearcher** - Career track record, key projects, and achievements
+9. **NetworkIntelligenceAnalyzer** - Professional network, company news, and trajectory signals
 
 ### Phase 2: Proposal Agents (Sequential Execution)
 1. **TechnicalScoperAgent** - Automation architecture and specialized agents
@@ -99,10 +102,15 @@ curl -X POST http://localhost:8000/initial-lead \
     "last_name": "Smith",
     "email": "john@testcorp.com",
     "phone": "555-0123",
-    "company_name": "Test Corp",
+    "company_name": "Smith Real Estate Group",
     "website": "https://example.com",
     "interested_in": "AI Automation",
-    "pain_points": "Manual order processing taking 15 hours/week"
+    "pain_points": "Missing 90% of after-hours calls, manual appointment booking taking 10 hrs/week",
+    "company_size": "11-50",
+    "industry": "Real Estate",
+    "budget_range": "$2,000-5,000/month",
+    "timeline": "Want to start within 30 days",
+    "linkedin_url": "https://linkedin.com/in/johnsmith"
   }'
 ```
 
@@ -196,7 +204,8 @@ gcloud run deploy revaya-intake \
 revaya-intake-system/
 ├── api.py                      # FastAPI application
 ├── config.py                   # Business configuration
-├── phase1_research.py          # Phase 1: 6 research agents
+├── phase1_research.py          # Phase 1: 6 core research agents
+├── phase1_enhanced_agents.py   # Phase 1: 3 enhanced research agents
 ├── phase2_proposal.py          # Phase 2: 4 proposal agents
 ├── agent_framework.py          # Custom agent framework
 ├── utils.py                    # Email, Slack, Drive utilities
@@ -230,9 +239,28 @@ Phase 1: Generate pre-call intelligence brief
   "company_name": "Test Corp",
   "website": "https://example.com",
   "interested_in": "AI Automation",
-  "pain_points": "Manual order processing"
+  "pain_points": "Missing after-hours calls, manual appointment booking taking 10 hrs/week",
+  "referred_by": "Google Search",
+  "company_size": "11-50",
+  "industry": "Real Estate",
+  "pain_cost_monthly": "$5,000-10,000 in missed opportunities",
+  "workflow_description": "Leads come in via website, manually entered into CRM",
+  "repetitive_tasks": "Data entry, appointment confirmations, follow-up emails",
+  "current_tools": "Salesforce, Google Calendar, Gmail",
+  "decision_makers": "CEO and Operations Director",
+  "past_vendors": "Tried Zapier but too limited",
+  "timeline": "Want to start within 30 days",
+  "budget_range": "$2,000-5,000/month",
+  "success_90_days": "Reduce manual work by 50%, never miss an after-hours call",
+  "what_prompted_call": "Lost a big deal because we didn't respond fast enough",
+  "tech_comfort_level": 3,
+  "tried_ai_before": "Used ChatGPT for writing but nothing operational",
+  "lead_source": "LinkedIn Ad",
+  "linkedin_url": "https://linkedin.com/in/johnsmith"
 }
 ```
+
+**Note:** Only `first_name`, `last_name`, `email`, and `interested_in` are required. All other fields are optional.
 
 **Response:**
 ```json

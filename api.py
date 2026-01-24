@@ -251,10 +251,14 @@ def detailed_health():
         "google_api_key": "configured" if os.getenv("GOOGLE_API_KEY") else "missing",
         "sendgrid_api_key": "configured" if os.getenv("SENDGRID_API_KEY") else "missing",
         "slack_webhook": "configured" if os.getenv("SLACK_WEBHOOK_URL") else "missing",
-        "google_drive": "configured" if os.path.exists(os.getenv("GOOGLE_DRIVE_CREDENTIALS_PATH", "credentials.json")) else "missing"
+        "google_drive": "configured" if os.path.exists(os.getenv("GOOGLE_DRIVE_CREDENTIALS_PATH", "credentials.json")) else "missing",
+        "airtable_api_key": "configured" if os.getenv("AIRTABLE_API_KEY") else "missing",
+        "airtable_base_id": "configured" if os.getenv("AIRTABLE_BASE_ID") else "missing",
+        "airtable_table_id": "configured" if os.getenv("AIRTABLE_TABLE_ID") else "missing",
+        "serpapi_key": "configured" if os.getenv("SERPAPI_KEY") else "missing (optional)"
     }
 
-    all_configured = all(v == "configured" for v in config_status.values())
+    all_configured = all(v == "configured" for v in config_status.values() if "optional" not in v)
 
     return {
         "status": "healthy" if all_configured else "degraded",

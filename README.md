@@ -7,11 +7,12 @@ A two-phase AI-powered system for automated discovery and proposal generation fo
 This system automates the entire client intake process from initial lead to proposal delivery:
 
 **Phase 1: Pre-Call Intelligence** (Automated)
-- 9 AI agents research company, contact, operations, digital footprint, and pain points
+- 10 AI agents research company, contact, operations, digital footprint, personal brand, and pain points
 - Generate discovery questions aligned with "Where is your time disappearing?" framework
 - Email complete brief to Shannon
-- Notify Slack (#revaya-leads)
+- Notify Slack (#revaya-leads) with personal brand summary
 - Save to Google Drive
+- Push lead to Airtable CRM
 
 **Phase 2: Proposal Generation** (Manual trigger after discovery call)
 - Input discovery answers from operational audit
@@ -31,6 +32,7 @@ This system automates the entire client intake process from initial lead to prop
 7. **DigitalFootprintAnalyzer** - Online presence, content style, and communication patterns
 8. **ProjectHistoryResearcher** - Career track record, key projects, and achievements
 9. **NetworkIntelligenceAnalyzer** - Professional network, company news, and trajectory signals
+10. **PersonalBrandAnalyzerAgent** - Deep personal brand intelligence for rapport building
 
 ### Phase 2: Proposal Agents (Sequential Execution)
 1. **TechnicalScoperAgent** - Automation architecture and specialized agents
@@ -46,6 +48,7 @@ This system automates the entire client intake process from initial lead to prop
 - SendGrid API key (for email)
 - Slack webhook URL (for notifications)
 - Google Drive API credentials (optional)
+- Airtable API key (for CRM integration)
 
 ## 🚀 Quick Start
 
@@ -76,6 +79,7 @@ SENDGRID_API_KEY=your_sendgrid_key
 FROM_EMAIL=system@revayaai.com
 TO_EMAIL=shannon@revayaai.com
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+AIRTABLE_API_KEY=your_airtable_api_key
 PORT=8000
 ```
 
@@ -205,10 +209,10 @@ revaya-intake-system/
 ├── api.py                      # FastAPI application
 ├── config.py                   # Business configuration
 ├── phase1_research.py          # Phase 1: 6 core research agents
-├── phase1_enhanced_agents.py   # Phase 1: 3 enhanced research agents
+├── phase1_enhanced_agents.py   # Phase 1: 4 enhanced research agents (digital, history, network, personal brand)
 ├── phase2_proposal.py          # Phase 2: 4 proposal agents
 ├── agent_framework.py          # Custom agent framework
-├── utils.py                    # Email, Slack, Drive utilities
+├── utils.py                    # Email, Slack, Drive, Airtable utilities
 ├── requirements.txt            # Python dependencies
 ├── Dockerfile                  # Container configuration
 ├── deploy.sh                   # Cloud Run deployment
@@ -332,6 +336,7 @@ Logs are printed to console with emoji indicators:
 - 📧 Sending email
 - 💬 Slack notification
 - 💾 Saving to Drive
+- 📊 Pushing to Airtable
 - ✅ Success
 - ❌ Error
 
@@ -354,6 +359,23 @@ Logs are printed to console with emoji indicators:
 - Verify `SLACK_WEBHOOK_URL` is correct
 - Test webhook with curl
 - Check Slack app permissions
+
+### Airtable not syncing
+- Verify `AIRTABLE_API_KEY` is set (create at airtable.com/create/tokens)
+- Ensure your token has access to the correct base
+- Required scopes: `data.records:read`, `data.records:write`
+- Core fields (required in your table):
+  - First Name (Single line text)
+  - Last Name (Single line text)
+  - Email (Email)
+  - Company Name (Single line text)
+  - Website (URL)
+  - Source (Single line text)
+  - Status (Single select with "open" option)
+- Optional fields (add to capture more data):
+  - Phone, LinkedIn, Interested In, Pain Points
+  - Industry, Company Size, Budget Range, Timeline
+  - Referred By, Brief Link, LinkedIn Headline
 
 ### Google Drive not saving
 - Ensure `credentials.json` exists
@@ -408,6 +430,7 @@ Website: https://www.revaya.ai
 - [ ] Verify email delivery
 - [ ] Verify Slack notifications
 - [ ] Test Google Drive integration
+- [ ] Test Airtable CRM integration
 - [ ] Build Docker image
 - [ ] Deploy to Cloud Run
 - [ ] Test production endpoints
@@ -417,7 +440,7 @@ Website: https://www.revaya.ai
 ## 📈 Future Enhancements
 
 - [ ] Add webhook for automatic form submission
-- [ ] Implement CRM integration (HubSpot/Salesforce)
+- [x] ~~Implement CRM integration~~ - Airtable integration complete
 - [ ] Add proposal versioning
 - [ ] Create dashboard for tracking leads
 - [ ] Add analytics and reporting

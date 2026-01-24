@@ -1,15 +1,15 @@
 """
-Utility functions for email, Slack, and Google Drive integration
+Utility functions for email, Slack, Google Drive, and Airtable integration
 """
 
 import os
 import json
-from typing import Optional
+from typing import Optional, Dict, Any
 from datetime import datetime
 import requests
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Content
-from config import EMAIL_CONFIG, SLACK_CONFIG, GOOGLE_DRIVE_CONFIG
+from config import EMAIL_CONFIG, SLACK_CONFIG, GOOGLE_DRIVE_CONFIG, AIRTABLE_CONFIG
 
 
 # ============================================================================
@@ -210,21 +210,48 @@ def notify_slack(message: str, channel: Optional[str] = None) -> dict:
         }
 
 
-def send_slack_lead_notification(lead_data: dict) -> dict:
+def send_slack_lead_notification(lead_data: dict, agent_results: dict = None) -> dict:
     """
     Send formatted lead notification to Slack
+
+    Args:
+        lead_data: Lead information dict
+        agent_results: Optional dict containing agent outputs (for personal brand summary)
     """
     company = lead_data.get("company_name", "Unknown Company")
     name = f"{lead_data.get('first_name', '')} {lead_data.get('last_name', '')}".strip()
     interested_in = lead_data.get("interested_in", "General Inquiry")
+    linkedin_url = lead_data.get("linkedin_url", "")
+
+    # Extract personal brand headline if available
+    personal_brand_summary = ""
+    if agent_results and "personal_brand_analysis" in agent_results:
+        # Try to extract the LinkedIn headline from the personal brand analysis
+        brand_content = agent_results.get("personal_brand_analysis", "")
+        if "LinkedIn Headline:" in brand_content:
+            # Extract the headline line
+            for line in brand_content.split("\n"):
+                if "LinkedIn Headline:" in line:
+                    # Clean up markdown formatting: remove **, -, and the label itself
+                    headline = line
+                    headline = headline.replace("**LinkedIn Headline:**", "")
+                    headline = headline.replace("LinkedIn Headline:", "")
+                    headline = headline.replace("**", "")
+                    headline = headline.lstrip("- ").strip()
+                    if headline:
+                        personal_brand_summary = f"\n*Personal Brand:* {name} - {headline}"
+                    break
+        if not personal_brand_summary and brand_content:
+            personal_brand_summary = f"\n*Personal Brand Analysis:* Complete"
 
     message = f"""
 🎯 *New Lead: {company}*
 
 *Contact:* {name}
 *Email:* {lead_data.get('email', 'N/A')}
+*LinkedIn:* {linkedin_url if linkedin_url else 'Not provided'}
 *Interested In:* {interested_in}
-*Pain Points:* {lead_data.get('pain_points', 'Not specified')}
+*Pain Points:* {lead_data.get('pain_points', 'Not specified')}{personal_brand_summary}
 
 Call prep brief has been generated and emailed!
 """
@@ -392,6 +419,132 @@ def save_to_local(content: str, filename: str) -> str:
 
 
 # ============================================================================
+# AIRTABLE CRM FUNCTIONS
+# ============================================================================
+
+def push_to_airtable(
+    lead_data: Dict[str, Any],
+    agent_results: Optional[Dict[str, Any]] = None,
+    drive_link: Optional[str] = None
+) -> dict:
+    """
+    Push lead data to Airtable CRM
+
+    Args:
+        lead_data: Lead information from intake form
+        agent_results: Optional agent analysis results
+        drive_link: Optional Google Drive link to the brief
+
+    Returns:
+        dict with success status and record details
+    """
+    try:
+        from pyairtable import Api
+
+        api_key = os.getenv("AIRTABLE_API_KEY")
+        if not api_key:
+            return {
+                "success": False,
+                "error": "AIRTABLE_API_KEY not configured",
+                "message": "Airtable push skipped - API key missing"
+            }
+
+        base_id = os.getenv("AIRTABLE_BASE_ID", AIRTABLE_CONFIG["base_id"])
+        table_id = os.getenv("AIRTABLE_TABLE_ID", AIRTABLE_CONFIG["table_id"])
+
+        # Initialize Airtable API
+        api = Api(api_key)
+        table = api.table(base_id, table_id)
+
+        # Build the record fields
+        # Map lead_data to Airtable field names (matching actual table schema)
+        record_fields = {
+            "First Name": lead_data.get("first_name", ""),
+            "Last Name": lead_data.get("last_name", ""),
+            "Email": lead_data.get("email", ""),
+            "Company Name": lead_data.get("company_name", ""),
+            "Website": lead_data.get("website", ""),
+            "Source": lead_data.get("lead_source", "Intake Form"),
+            "Status": "open",  # Matches existing Airtable option
+        }
+
+        # Add optional fields if they exist in your Airtable
+        # (These require adding columns to your table)
+        optional_fields = {
+            "Phone": lead_data.get("phone", ""),
+            "LinkedIn": lead_data.get("linkedin_url", ""),
+            "Interested In": lead_data.get("interested_in", ""),
+            "Pain Points": lead_data.get("pain_points", ""),
+            "Industry": lead_data.get("industry", ""),
+            "Company Size": lead_data.get("company_size", ""),
+            "Budget Range": lead_data.get("budget_range", ""),
+            "Timeline": lead_data.get("timeline", ""),
+            "Referred By": lead_data.get("referred_by", ""),
+        }
+
+        # Add Drive link if available
+        if drive_link:
+            optional_fields["Brief Link"] = drive_link
+
+        # Extract personal brand headline if available
+        if agent_results and "personal_brand_analysis" in agent_results:
+            brand_content = agent_results.get("personal_brand_analysis", "")
+            if "LinkedIn Headline:" in brand_content:
+                for line in brand_content.split("\n"):
+                    if "LinkedIn Headline:" in line:
+                        headline = line
+                        headline = headline.replace("**LinkedIn Headline:**", "")
+                        headline = headline.replace("LinkedIn Headline:", "")
+                        headline = headline.replace("**", "")
+                        headline = headline.lstrip("- ").strip()
+                        if headline:
+                            optional_fields["LinkedIn Headline"] = headline[:255]
+                        break
+
+        # Remove empty fields to avoid Airtable validation errors
+        record_fields = {k: v for k, v in record_fields.items() if v}
+
+        # Try to add optional fields (will be ignored if columns don't exist)
+        for field, value in optional_fields.items():
+            if value:
+                record_fields[field] = value
+
+        # Create the record (Airtable ignores fields that don't exist in schema)
+        try:
+            created_record = table.create(record_fields)
+        except Exception as create_error:
+            # If creation fails due to unknown fields, retry with only core fields
+            if "UNKNOWN_FIELD_NAME" in str(create_error):
+                core_fields = {
+                    "First Name": lead_data.get("first_name", ""),
+                    "Last Name": lead_data.get("last_name", ""),
+                    "Email": lead_data.get("email", ""),
+                    "Company Name": lead_data.get("company_name", ""),
+                    "Source": lead_data.get("lead_source", "Intake Form"),
+                    "Status": "open",
+                }
+                core_fields = {k: v for k, v in core_fields.items() if v}
+                created_record = table.create(core_fields)
+            else:
+                raise create_error
+
+        lead_name = f"{record_fields.get('First Name', '')} {record_fields.get('Last Name', '')}".strip() or "Unknown"
+        return {
+            "success": True,
+            "record_id": created_record["id"],
+            "message": f"Lead pushed to Airtable: {lead_name}",
+            "fields_saved": list(record_fields.keys())
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": f"Failed to push to Airtable: {str(e)}"
+        }
+
+
+# ============================================================================
 # CALL PREP BRIEF COMPILER
 # ============================================================================
 
@@ -402,13 +555,16 @@ def compile_call_prep_brief(agent_results: dict, lead_data: dict) -> str:
     company = lead_data.get("company_name", "Prospect")
     contact = f"{lead_data.get('first_name', '')} {lead_data.get('last_name', '')}".strip()
 
+    linkedin = lead_data.get('linkedin_url', '')
+    linkedin_display = f"**LinkedIn:** {linkedin}\n" if linkedin else ""
+
     brief = f"""
 # CALL PREP BRIEF: {company}
 
 **Contact:** {contact}
 **Email:** {lead_data.get('email', 'N/A')}
 **Phone:** {lead_data.get('phone', 'N/A')}
-**Interested In:** {lead_data.get('interested_in', 'N/A')}
+{linkedin_display}**Interested In:** {lead_data.get('interested_in', 'N/A')}
 
 **Generated:** {datetime.now().strftime("%Y-%m-%d %H:%M")}
 
@@ -420,8 +576,12 @@ def compile_call_prep_brief(agent_results: dict, lead_data: dict) -> str:
     sections = [
         ("company_profile", "COMPANY RESEARCH"),
         ("contact_profile", "CONTACT RESEARCH"),
-        ("website_analysis", "WEBSITE ANALYSIS"),
+        ("operations_analysis", "OPERATIONS ANALYSIS"),
         ("competitive_context", "COMPETITIVE INTELLIGENCE"),
+        ("digital_footprint", "DIGITAL FOOTPRINT"),
+        ("project_history", "PROJECT HISTORY"),
+        ("network_intelligence", "NETWORK INTELLIGENCE"),
+        ("personal_brand_analysis", "PERSONAL BRAND INTELLIGENCE"),
         ("discovery_questions", "DISCOVERY QUESTIONS"),
         ("objection_handling", "OBJECTION HANDLING")
     ]

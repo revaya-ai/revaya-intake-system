@@ -8,7 +8,8 @@ from typing import Dict, Any
 from phase1_enhanced_agents import (
     digital_footprint_agent,
     project_history_agent,
-    network_intelligence_agent
+    network_intelligence_agent,
+    personal_brand_agent
 )
 
 
@@ -301,7 +302,7 @@ Lead with problems solved, not AI features.
 
 
 # Build the workflow structure
-# Parallel research team (agents 1-7 run simultaneously)
+# Parallel research team (agents 1-10 run simultaneously)
 research_team = ParallelAgent(
     name="ResearchTeam",
     sub_agents=[
@@ -309,9 +310,10 @@ research_team = ParallelAgent(
         contact_research_agent,
         operations_analyzer_agent,
         competitive_context_agent,
-        digital_footprint_agent,      # NEW: Digital presence & content analysis
-        project_history_agent,        # NEW: Career track record & achievements
-        network_intelligence_agent    # NEW: Network mapping & company news
+        digital_footprint_agent,      # Digital presence & content analysis
+        project_history_agent,        # Career track record & achievements
+        network_intelligence_agent,   # Network mapping & company news
+        personal_brand_agent          # Deep personal brand intelligence
     ]
 )
 
@@ -339,6 +341,7 @@ Contact Information:
 - Name: {lead_data.get('first_name', '')} {lead_data.get('last_name', '')}
 - Email: {lead_data.get('email', '')}
 - Phone: {lead_data.get('phone', 'Not provided')}
+- LinkedIn: {lead_data.get('linkedin_url', 'Not provided')}
 
 Company Information:
 - Company: {lead_data.get('company_name', 'Not provided')}

@@ -78,7 +78,8 @@ from utils import (
     send_slack_lead_notification,
     send_slack_proposal_notification,
     save_to_drive,
-    compile_call_prep_brief
+    compile_call_prep_brief,
+    push_to_airtable
 )
 from config import COMPANY_INFO
 
@@ -312,23 +313,26 @@ async def initial_lead(request: Request, background_tasks: BackgroundTasks):
         )
         
         print("💬 Queuing Slack notification...")
-        background_tasks.add_task(send_slack_lead_notification, lead_dict)
+        background_tasks.add_task(send_slack_lead_notification, lead_dict, agent_results)
         
         print("💾 Queuing Google Drive save...")
         background_tasks.add_task(save_to_drive, brief, filename)
+
+        print("📊 Queuing Airtable CRM push...")
+        background_tasks.add_task(push_to_airtable, lead_dict, agent_results)
 
         print("✅ Phase 1 complete! Background tasks queued.")
 
         return {
             "success": True,
-            "message": "Call prep brief generated successfully. Email and notifications queued.",
+            "message": "Call prep brief generated successfully. Email, notifications, and CRM queued.",
             "lead": {
                 "company": company_name,
                 "contact": f"{lead.first_name} {lead.last_name}",
                 "email": lead.email
             },
             "brief_preview": brief[:500] + "...",
-            "tasks_queued": ["email", "slack", "drive"]
+            "tasks_queued": ["email", "slack", "drive", "airtable"]
         }
 
     except Exception as e:

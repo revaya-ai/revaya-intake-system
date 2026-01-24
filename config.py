@@ -164,6 +164,12 @@ GOOGLE_DRIVE_CONFIG = {
     "folder_name": "Revaya AI - Client Proposals"
 }
 
+AIRTABLE_CONFIG = {
+    "base_id": "app1Qgt52Fj22f9Nh",
+    "table_id": "tblyFaORZ4Vi3eonh",
+    "table_name": "Leads"  # Friendly name for logging
+}
+
 # Discovery framework aligned with Revaya positioning
 DISCOVERY_QUESTIONS = {
     "ai_time_audit": [

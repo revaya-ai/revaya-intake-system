@@ -305,11 +305,12 @@ async def initial_lead(request: Request, background_tasks: BackgroundTasks):
         filename = f"CallPrep_{company_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
 
         # Queue background tasks (run after response is sent)
+        contact_name = f"{lead.first_name} {lead.last_name}".strip()
         print("📧 Queuing email task...")
         background_tasks.add_task(
             send_email,
             content_text=brief,
-            subject=f"Call Prep Brief: {company_name}"
+            subject=f"Pre-Call Brief + DOSSIER: {contact_name}"
         )
         
         print("💬 Queuing Slack notification...")
@@ -318,21 +319,35 @@ async def initial_lead(request: Request, background_tasks: BackgroundTasks):
         print("💾 Queuing Google Drive save...")
         background_tasks.add_task(save_to_drive, brief, filename)
 
+        # Save dossier separately if generated
+        if "dossier" in agent_results and agent_results.get("dossier"):
+            dossier_content = agent_results.get("dossier", "")
+            if dossier_content and "Error" not in dossier_content:
+                dossier_filename = f"DOSSIER_{contact_name.replace(' ', '_')}.md"
+                print("📋 Queuing Dossier save to Google Drive...")
+                background_tasks.add_task(save_to_drive, dossier_content, dossier_filename)
+
         print("📊 Queuing Airtable CRM push...")
         background_tasks.add_task(push_to_airtable, lead_dict, agent_results)
 
         print("✅ Phase 1 complete! Background tasks queued.")
 
+        # Build tasks list
+        tasks_queued = ["email", "slack", "drive", "airtable"]
+        if "dossier" in agent_results and agent_results.get("dossier") and "Error" not in agent_results.get("dossier", ""):
+            tasks_queued.append("dossier_drive")
+
         return {
             "success": True,
-            "message": "Call prep brief generated successfully. Email, notifications, and CRM queued.",
+            "message": "Call prep brief + dossier generated successfully. Email, notifications, and CRM queued.",
             "lead": {
                 "company": company_name,
-                "contact": f"{lead.first_name} {lead.last_name}",
+                "contact": contact_name,
                 "email": lead.email
             },
             "brief_preview": brief[:500] + "...",
-            "tasks_queued": ["email", "slack", "drive", "airtable"]
+            "dossier_generated": "dossier" in agent_results and bool(agent_results.get("dossier")),
+            "tasks_queued": tasks_queued
         }
 
     except Exception as e:

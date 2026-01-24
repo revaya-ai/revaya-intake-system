@@ -4,28 +4,41 @@ Provides parallel and sequential agent execution patterns
 """
 
 import os
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from typing import List, Dict, Any, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 
-# Configure Google AI
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+# Lazy client initialization
+_client = None
+
+def get_client():
+    """Get or create the Gemini client (lazy initialization)"""
+    global _client
+    if _client is None:
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            raise ValueError("GOOGLE_API_KEY environment variable is required")
+        _client = genai.Client(api_key=api_key)
+    return _client
 
 
 class Agent:
-    """Base agent class with tool access"""
+    """Base agent class with Google Search grounding for real-time web research"""
 
-    def __init__(self, name: str, instructions: str, output_key: str, tools: Optional[List] = None):
+    def __init__(self, name: str, instructions: str, output_key: str, tools: Optional[List] = None, enable_search: bool = True):
         self.name = name
         self.instructions = instructions
         self.output_key = output_key
         self.tools = tools or []
-        self.model = genai.GenerativeModel('gemini-2.0-flash')
+        self.enable_search = enable_search
+        self.model = "gemini-2.5-flash"
 
     def run(self, context: str, shared_state: Optional[Dict] = None) -> Dict[str, Any]:
         """
         Run the agent with given context
+        Uses Google Search grounding for real-time web research
         Returns dict with output_key: result
         """
         shared_state = shared_state or {}
@@ -40,12 +53,22 @@ CONTEXT:
 SHARED STATE (outputs from previous agents):
 {json.dumps(shared_state, indent=2)}
 
-Please provide your analysis in markdown format.
+Please provide your analysis in markdown format. When researching people or companies online, include the sources you found.
 """
 
         try:
-            # Generate response
-            response = self.model.generate_content(prompt)
+            # Configure Google Search grounding if enabled
+            config = None
+            if self.enable_search:
+                google_search_tool = types.Tool(google_search=types.GoogleSearch())
+                config = types.GenerateContentConfig(tools=[google_search_tool])
+
+            # Generate response with search grounding
+            response = get_client().models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=config
+            )
             result = response.text
 
             return {
@@ -114,22 +137,7 @@ class SequentialAgent:
 
 
 # Tool functions that agents can use
-def google_search(query: str) -> str:
-    """
-    Simulated Google search - in production, use actual search API
-    Returns formatted search results
-    """
-    return f"""
-Performing search for: {query}
-
-Note: This is a simulated search result. In production, this would use:
-- Google Custom Search API
-- SerpAPI
-- Other search providers
-
-For now, returning placeholder that the agent should work with the available information.
-"""
-
+# Note: google_search is now handled natively by Gemini's Google Search grounding
 
 def web_fetch(url: str) -> str:
     """

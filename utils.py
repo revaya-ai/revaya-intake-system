@@ -80,63 +80,86 @@ def send_email(
 def markdown_to_html(markdown_text: str) -> str:
     """
     Convert markdown to HTML for email
-    Basic conversion - wraps in HTML template
+    Converts markdown headings to bold text, uses Montserrat font size 11
     """
-    # Simple HTML template
+    import re
+
+    # Convert markdown to HTML
+    content = markdown_text
+
+    # Convert ### headings to bold (h3)
+    content = re.sub(r'^### (.+)$', r'<p style="margin-top: 20px; margin-bottom: 8px;"><strong>\1</strong></p>', content, flags=re.MULTILINE)
+
+    # Convert ## headings to bold larger (h2)
+    content = re.sub(r'^## (.+)$', r'<p style="margin-top: 28px; margin-bottom: 10px;"><strong style="font-size: 13px;">\1</strong></p>', content, flags=re.MULTILINE)
+
+    # Convert # headings to bold largest (h1)
+    content = re.sub(r'^# (.+)$', r'<p style="margin-top: 32px; margin-bottom: 12px;"><strong style="font-size: 15px;">\1</strong></p>', content, flags=re.MULTILINE)
+
+    # Convert **text** to bold
+    content = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', content)
+
+    # Convert *text* to italic
+    content = re.sub(r'\*(.+?)\*', r'<em>\1</em>', content)
+
+    # Convert markdown links [text](url) to HTML links
+    content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2" style="color: #3498db;">\1</a>', content)
+
+    # Convert bullet points
+    content = re.sub(r'^- (.+)$', r'<p style="margin: 4px 0 4px 20px;">• \1</p>', content, flags=re.MULTILINE)
+
+    # Convert numbered lists
+    content = re.sub(r'^(\d+)\. (.+)$', r'<p style="margin: 4px 0 4px 20px;">\1. \2</p>', content, flags=re.MULTILINE)
+
+    # Convert --- to horizontal rule
+    content = re.sub(r'^---+$', r'<hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">', content, flags=re.MULTILINE)
+
+    # Convert line breaks to <br> for proper spacing
+    content = content.replace('\n\n', '</p><p style="margin: 8px 0;">')
+    content = content.replace('\n', '<br>')
+
+    # Wrap in HTML template with Montserrat font size 11
     html = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
         <style>
             body {{
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 11px;
                 line-height: 1.6;
                 color: #333;
                 max-width: 800px;
                 margin: 0 auto;
                 padding: 20px;
             }}
-            h1 {{
-                color: #2c3e50;
-                border-bottom: 3px solid #3498db;
-                padding-bottom: 10px;
-            }}
-            h2 {{
-                color: #34495e;
-                margin-top: 30px;
-                border-bottom: 1px solid #ecf0f1;
-                padding-bottom: 5px;
-            }}
-            h3 {{
-                color: #555;
-            }}
-            ul, ol {{
-                padding-left: 25px;
-            }}
-            li {{
-                margin-bottom: 8px;
+            p {{
+                margin: 8px 0;
             }}
             strong {{
+                font-weight: 600;
                 color: #2c3e50;
             }}
-            code {{
-                background-color: #f4f4f4;
-                padding: 2px 6px;
-                border-radius: 3px;
-                font-family: 'Courier New', monospace;
+            a {{
+                color: #3498db;
+                text-decoration: none;
+            }}
+            a:hover {{
+                text-decoration: underline;
             }}
             .footer {{
                 margin-top: 40px;
                 padding-top: 20px;
                 border-top: 1px solid #ecf0f1;
-                font-size: 0.9em;
+                font-size: 10px;
                 color: #7f8c8d;
             }}
         </style>
     </head>
     <body>
-        <div style="white-space: pre-wrap;">{markdown_text}</div>
+        <div>{content}</div>
         <div class="footer">
             <p>
                 <strong>Revaya AI</strong><br>
@@ -223,26 +246,21 @@ def send_slack_lead_notification(lead_data: dict, agent_results: dict = None) ->
     interested_in = lead_data.get("interested_in", "General Inquiry")
     linkedin_url = lead_data.get("linkedin_url", "")
 
-    # Extract personal brand headline if available
-    personal_brand_summary = ""
-    if agent_results and "personal_brand_analysis" in agent_results:
-        # Try to extract the LinkedIn headline from the personal brand analysis
-        brand_content = agent_results.get("personal_brand_analysis", "")
-        if "LinkedIn Headline:" in brand_content:
-            # Extract the headline line
-            for line in brand_content.split("\n"):
-                if "LinkedIn Headline:" in line:
-                    # Clean up markdown formatting: remove **, -, and the label itself
-                    headline = line
-                    headline = headline.replace("**LinkedIn Headline:**", "")
-                    headline = headline.replace("LinkedIn Headline:", "")
-                    headline = headline.replace("**", "")
-                    headline = headline.lstrip("- ").strip()
-                    if headline:
-                        personal_brand_summary = f"\n*Personal Brand:* {name} - {headline}"
-                    break
-        if not personal_brand_summary and brand_content:
-            personal_brand_summary = f"\n*Personal Brand Analysis:* Complete"
+    # Check if dossier was generated and extract headline
+    dossier_status = ""
+    if agent_results and "dossier" in agent_results:
+        dossier_content = agent_results.get("dossier", "")
+        if dossier_content and "Error" not in dossier_content:
+            # Try to extract LinkedIn headline from dossier
+            headline_info = ""
+            if "**Title:**" in dossier_content:
+                for line in dossier_content.split("\n"):
+                    if "**Title:**" in line:
+                        title = line.replace("**Title:**", "").strip()
+                        if title:
+                            headline_info = f" - {title}"
+                        break
+            dossier_status = f"\n📋 *DOSSIER generated for {name}*{headline_info}"
 
     message = f"""
 🎯 *New Lead: {company}*
@@ -251,7 +269,7 @@ def send_slack_lead_notification(lead_data: dict, agent_results: dict = None) ->
 *Email:* {lead_data.get('email', 'N/A')}
 *LinkedIn:* {linkedin_url if linkedin_url else 'Not provided'}
 *Interested In:* {interested_in}
-*Pain Points:* {lead_data.get('pain_points', 'Not specified')}{personal_brand_summary}
+*Pain Points:* {lead_data.get('pain_points', 'Not specified')}{dossier_status}
 
 Call prep brief has been generated and emailed!
 """
@@ -486,19 +504,15 @@ def push_to_airtable(
         if drive_link:
             optional_fields["Brief Link"] = drive_link
 
-        # Extract personal brand headline if available
-        if agent_results and "personal_brand_analysis" in agent_results:
-            brand_content = agent_results.get("personal_brand_analysis", "")
-            if "LinkedIn Headline:" in brand_content:
-                for line in brand_content.split("\n"):
-                    if "LinkedIn Headline:" in line:
-                        headline = line
-                        headline = headline.replace("**LinkedIn Headline:**", "")
-                        headline = headline.replace("LinkedIn Headline:", "")
-                        headline = headline.replace("**", "")
-                        headline = headline.lstrip("- ").strip()
-                        if headline:
-                            optional_fields["LinkedIn Headline"] = headline[:255]
+        # Extract title/headline from dossier if available
+        if agent_results and "dossier" in agent_results:
+            dossier_content = agent_results.get("dossier", "")
+            if "**Title:**" in dossier_content:
+                for line in dossier_content.split("\n"):
+                    if "**Title:**" in line:
+                        title = line.replace("**Title:**", "").strip()
+                        if title:
+                            optional_fields["LinkedIn Headline"] = title[:255]
                         break
 
         # Remove empty fields to avoid Airtable validation errors
@@ -573,15 +587,16 @@ def compile_call_prep_brief(agent_results: dict, lead_data: dict) -> str:
 """
 
     # Add each section from agent results
+    # Dossier first for quick prospect overview, then supporting research
     sections = [
-        ("company_profile", "COMPANY RESEARCH"),
+        ("dossier", "COMPREHENSIVE DOSSIER"),
         ("contact_profile", "CONTACT RESEARCH"),
-        ("operations_analysis", "OPERATIONS ANALYSIS"),
+        ("company_profile", "COMPANY RESEARCH"),
         ("competitive_context", "COMPETITIVE INTELLIGENCE"),
+        ("operations_analysis", "OPERATIONS ANALYSIS"),
         ("digital_footprint", "DIGITAL FOOTPRINT"),
         ("project_history", "PROJECT HISTORY"),
         ("network_intelligence", "NETWORK INTELLIGENCE"),
-        ("personal_brand_analysis", "PERSONAL BRAND INTELLIGENCE"),
         ("discovery_questions", "DISCOVERY QUESTIONS"),
         ("objection_handling", "OBJECTION HANDLING")
     ]

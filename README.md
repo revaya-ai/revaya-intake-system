@@ -7,7 +7,7 @@ A two-phase AI-powered system for automated discovery and proposal generation fo
 This system automates the entire client intake process from initial lead to proposal delivery:
 
 **Phase 1: Pre-Call Intelligence** (Automated)
-- 10 AI agents research company, contact, operations, digital footprint, personal brand, and pain points
+- 10 AI agents with **real-time web research** (Google Search grounding) research company, contact, operations, digital footprint, personal brand, and pain points
 - Generate discovery questions aligned with "Where is your time disappearing?" framework
 - Email complete brief to Shannon
 - Notify Slack (#revaya-leads) with personal brand summary
@@ -44,11 +44,21 @@ This system automates the entire client intake process from initial lead to prop
 
 - Python 3.11+
 - Google Cloud account (project: `revaya-ai-systems`)
-- Google AI API key
+- Google AI API key (with Gemini 2.5 Flash access)
 - SendGrid API key (for email)
 - Slack webhook URL (for notifications)
 - Google Drive API credentials (optional)
 - Airtable API key (for CRM integration)
+
+### Google Search Grounding
+
+Agents use **Gemini 2.5 Flash with Google Search grounding** for real-time web research. This enables:
+- Live LinkedIn profile research (no scraping required)
+- Current company information and news
+- Real-time competitive intelligence
+- Automatic source citations
+
+**Cost:** ~$35 per 1,000 grounded queries (uses same `GOOGLE_API_KEY`)
 
 ## 🚀 Quick Start
 
@@ -211,7 +221,7 @@ revaya-intake-system/
 ├── phase1_research.py          # Phase 1: 6 core research agents
 ├── phase1_enhanced_agents.py   # Phase 1: 4 enhanced research agents (digital, history, network, personal brand)
 ├── phase2_proposal.py          # Phase 2: 4 proposal agents
-├── agent_framework.py          # Custom agent framework
+├── agent_framework.py          # Agent framework with Google Search grounding
 ├── utils.py                    # Email, Slack, Drive, Airtable utilities
 ├── requirements.txt            # Python dependencies
 ├── Dockerfile                  # Container configuration
@@ -441,6 +451,7 @@ Website: https://www.revaya.ai
 
 - [ ] Add webhook for automatic form submission
 - [x] ~~Implement CRM integration~~ - Airtable integration complete
+- [x] ~~Add real-time web research~~ - Google Search grounding enabled (Gemini 2.5 Flash)
 - [ ] Add proposal versioning
 - [ ] Create dashboard for tracking leads
 - [ ] Add analytics and reporting

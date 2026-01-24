@@ -9,7 +9,7 @@ from phase1_enhanced_agents import (
     digital_footprint_agent,
     project_history_agent,
     network_intelligence_agent,
-    personal_brand_agent
+    dossier_agent
 )
 
 
@@ -313,7 +313,7 @@ research_team = ParallelAgent(
         digital_footprint_agent,      # Digital presence & content analysis
         project_history_agent,        # Career track record & achievements
         network_intelligence_agent,   # Network mapping & company news
-        personal_brand_agent          # Deep personal brand intelligence
+        dossier_agent                 # Comprehensive CV/profile for rapport building
     ]
 )
 

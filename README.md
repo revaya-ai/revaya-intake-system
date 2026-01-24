@@ -49,6 +49,7 @@ This system automates the entire client intake process from initial lead to prop
 - Slack webhook URL (for notifications)
 - Google Drive API credentials (optional)
 - Airtable API key (for CRM integration)
+- SerpAPI key (optional, for LinkedIn/web search enrichment)
 
 ## 🚀 Quick Start
 
@@ -80,6 +81,7 @@ FROM_EMAIL=system@revayaai.com
 TO_EMAIL=shannon@revayaai.com
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 AIRTABLE_API_KEY=your_airtable_api_key
+SERPAPI_KEY=your_serpapi_key  # Optional: enables live LinkedIn/web search
 PORT=8000
 ```
 
@@ -387,6 +389,12 @@ Logs are printed to console with emoji indicators:
 - Check Google AI API quota
 - Review logs for specific errors
 
+### LinkedIn search not working
+- Verify `SERPAPI_KEY` is set (get free key at serpapi.com)
+- Free tier: 100 searches/month
+- Check your remaining quota at serpapi.com/dashboard
+- System gracefully falls back to agent-only analysis if not configured
+
 ## 📝 Development
 
 ### Run Tests
@@ -441,6 +449,7 @@ Website: https://www.revaya.ai
 
 - [ ] Add webhook for automatic form submission
 - [x] ~~Implement CRM integration~~ - Airtable integration complete
+- [x] ~~Add live web search for LinkedIn enrichment~~ - SerpAPI integration complete
 - [ ] Add proposal versioning
 - [ ] Create dashboard for tracking leads
 - [ ] Add analytics and reporting

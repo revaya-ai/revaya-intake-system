@@ -114,21 +114,83 @@ class SequentialAgent:
 
 
 # Tool functions that agents can use
-def google_search(query: str) -> str:
+def google_search(query: str, num_results: int = 5) -> str:
     """
-    Simulated Google search - in production, use actual search API
-    Returns formatted search results
+    Search the web using SerpAPI for real-time results.
+    Useful for LinkedIn profile lookups, company research, etc.
+
+    Args:
+        query: Search query (e.g., "John Smith LinkedIn")
+        num_results: Number of results to return (default 5)
+
+    Returns:
+        Formatted search results with titles, snippets, and links
     """
-    return f"""
-Performing search for: {query}
+    api_key = os.getenv("SERPAPI_KEY")
 
-Note: This is a simulated search result. In production, this would use:
-- Google Custom Search API
-- SerpAPI
-- Other search providers
+    if not api_key:
+        return f"""
+[Search API not configured]
+Query: {query}
 
-For now, returning placeholder that the agent should work with the available information.
+To enable live web search, set the SERPAPI_KEY environment variable.
+Get a free API key at: https://serpapi.com (100 free searches/month)
+
+For now, the agent should work with available information from the intake form.
 """
+
+    try:
+        from serpapi import GoogleSearch
+
+        params = {
+            "q": query,
+            "api_key": api_key,
+            "num": num_results,
+            "hl": "en",
+            "gl": "us"
+        }
+
+        search = GoogleSearch(params)
+        results = search.get_dict()
+
+        output_parts = [f"Search results for: {query}\n"]
+
+        # Extract knowledge graph if present (useful for LinkedIn profiles)
+        if "knowledge_graph" in results:
+            kg = results["knowledge_graph"]
+            output_parts.append("--- Knowledge Panel ---")
+            if "title" in kg:
+                output_parts.append(f"Title: {kg['title']}")
+            if "description" in kg:
+                output_parts.append(f"Description: {kg['description']}")
+            if "source" in kg:
+                output_parts.append(f"Source: {kg['source'].get('link', 'N/A')}")
+            output_parts.append("")
+
+        # Extract organic results
+        if "organic_results" in results:
+            output_parts.append("--- Top Results ---")
+            for i, result in enumerate(results["organic_results"][:num_results], 1):
+                title = result.get("title", "No title")
+                link = result.get("link", "")
+                snippet = result.get("snippet", "No description")
+
+                output_parts.append(f"\n{i}. {title}")
+                output_parts.append(f"   URL: {link}")
+                output_parts.append(f"   {snippet}")
+
+        # Include any "people also ask" for additional context
+        if "related_questions" in results and results["related_questions"]:
+            output_parts.append("\n--- Related Questions ---")
+            for q in results["related_questions"][:3]:
+                output_parts.append(f"- {q.get('question', '')}")
+
+        return "\n".join(output_parts)
+
+    except ImportError:
+        return f"Error: serpapi package not installed. Run: pip install google-search-results"
+    except Exception as e:
+        return f"Search error for '{query}': {str(e)}"
 
 
 def web_fetch(url: str) -> str:

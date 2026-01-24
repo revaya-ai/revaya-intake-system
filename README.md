@@ -32,7 +32,7 @@ This system automates the entire client intake process from initial lead to prop
 7. **DigitalFootprintAnalyzer** - Online presence, content style, and communication patterns
 8. **ProjectHistoryResearcher** - Career track record, key projects, and achievements
 9. **NetworkIntelligenceAnalyzer** - Professional network, company news, and trajectory signals
-10. **PersonalBrandAnalyzerAgent** - Deep personal brand intelligence for rapport building
+10. **DossierAgent** - Comprehensive personal intelligence dossier with live web research
 
 ### Phase 2: Proposal Agents (Sequential Execution)
 1. **TechnicalScoperAgent** - Automation architecture and specialized agents

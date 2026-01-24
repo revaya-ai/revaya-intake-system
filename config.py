@@ -165,8 +165,8 @@ GOOGLE_DRIVE_CONFIG = {
 }
 
 AIRTABLE_CONFIG = {
-    "base_id": "app1Qgt52Fj22f9Nh",
-    "table_id": "tblyFaORZ4Vi3eonh",
+    "base_id": "ENV_VAR",  # Set AIRTABLE_BASE_ID in .env
+    "table_id": "ENV_VAR",  # Set AIRTABLE_TABLE_ID in .env
     "table_name": "Leads"  # Friendly name for logging
 }
 

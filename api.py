@@ -22,6 +22,31 @@ import threading
 load_dotenv()
 
 # ============================================================================
+# LOGGING WRAPPERS FOR BACKGROUND TASKS
+# ============================================================================
+# Background tasks swallow errors silently - these wrappers ensure we see them
+
+def logged_task(func, task_name: str):
+    """Wrapper that logs success/failure of background tasks"""
+    def wrapper(*args, **kwargs):
+        try:
+            result = func(*args, **kwargs)
+            if isinstance(result, dict):
+                if result.get("success"):
+                    print(f"  ✅ {task_name}: {result.get('message', 'Success')}")
+                else:
+                    print(f"  ❌ {task_name} FAILED: {result.get('error', result.get('message', 'Unknown error'))}")
+            else:
+                print(f"  ✅ {task_name}: Complete")
+            return result
+        except Exception as e:
+            print(f"  ❌ {task_name} EXCEPTION: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            raise
+    return wrapper
+
+# ============================================================================
 # REQUEST DEDUPLICATION
 # ============================================================================
 # Simple in-memory cache to prevent duplicate processing of the same lead
@@ -304,22 +329,25 @@ async def initial_lead(request: Request, background_tasks: BackgroundTasks):
         company_name = lead.company_name or "Prospect"
         filename = f"CallPrep_{company_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
 
-        # Queue background tasks (run after response is sent)
-        print("📧 Queuing email task...")
+        # Queue background tasks with logging (run after response is sent)
+        print("📤 Queuing background tasks...")
         background_tasks.add_task(
-            send_email,
+            logged_task(send_email, "Email"),
             content_text=brief,
             subject=f"Call Prep Brief: {company_name}"
         )
-        
-        print("💬 Queuing Slack notification...")
-        background_tasks.add_task(send_slack_lead_notification, lead_dict, agent_results)
-        
-        print("💾 Queuing Google Drive save...")
-        background_tasks.add_task(save_to_drive, brief, filename)
-
-        print("📊 Queuing Airtable CRM push...")
-        background_tasks.add_task(push_to_airtable, lead_dict, agent_results)
+        background_tasks.add_task(
+            logged_task(send_slack_lead_notification, "Slack"),
+            lead_dict, agent_results
+        )
+        background_tasks.add_task(
+            logged_task(save_to_drive, "Google Drive"),
+            brief, filename
+        )
+        background_tasks.add_task(
+            logged_task(push_to_airtable, "Airtable"),
+            lead_dict, agent_results
+        )
 
         print("✅ Phase 1 complete! Background tasks queued.")
 

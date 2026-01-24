@@ -3,7 +3,7 @@ Phase 1: Pre-Call Intelligence System
 Six research agents that analyze company, operations, and automation opportunities
 """
 
-from agent_framework import Agent, ParallelAgent, SequentialAgent, google_search, web_fetch
+from agent_framework import Agent, ParallelAgent, SequentialAgent, web_fetch
 from typing import Dict, Any
 from phase1_enhanced_agents import (
     digital_footprint_agent,

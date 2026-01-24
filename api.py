@@ -83,6 +83,59 @@ from utils import (
 )
 from config import COMPANY_INFO
 
+
+# ============================================================================
+# BACKGROUND TASK WRAPPERS (with logging)
+# ============================================================================
+
+def bg_send_email(content_text: str, subject: str):
+    """Wrapper for send_email with error logging"""
+    try:
+        result = send_email(content_text=content_text, subject=subject)
+        if result.get("success"):
+            print(f"✅ Email sent successfully: {result.get('message')}")
+        else:
+            print(f"❌ Email failed: {result.get('error')}")
+    except Exception as e:
+        print(f"❌ Email exception: {str(e)}")
+
+
+def bg_send_slack(lead_dict: dict, agent_results: dict):
+    """Wrapper for Slack notification with error logging"""
+    try:
+        result = send_slack_lead_notification(lead_dict, agent_results)
+        if result.get("success"):
+            print(f"✅ Slack sent successfully")
+        else:
+            print(f"❌ Slack failed: {result.get('error')}")
+    except Exception as e:
+        print(f"❌ Slack exception: {str(e)}")
+
+
+def bg_save_drive(content: str, filename: str):
+    """Wrapper for Drive save with error logging"""
+    try:
+        result = save_to_drive(content, filename)
+        if result.get("success"):
+            print(f"✅ Drive save successful: {filename}")
+        else:
+            print(f"❌ Drive save failed: {result.get('error')}")
+    except Exception as e:
+        print(f"❌ Drive exception: {str(e)}")
+
+
+def bg_push_airtable(lead_dict: dict, agent_results: dict):
+    """Wrapper for Airtable push with error logging"""
+    try:
+        result = push_to_airtable(lead_dict, agent_results)
+        if result.get("success"):
+            print(f"✅ Airtable push successful: {result.get('message')}")
+        else:
+            print(f"❌ Airtable failed: {result.get('error')}")
+    except Exception as e:
+        print(f"❌ Airtable exception: {str(e)}")
+
+
 # Initialize FastAPI
 app = FastAPI(
     title="Revaya AI Intake API",
@@ -308,16 +361,16 @@ async def initial_lead(request: Request, background_tasks: BackgroundTasks):
         contact_name = f"{lead.first_name} {lead.last_name}".strip()
         print("📧 Queuing email task...")
         background_tasks.add_task(
-            send_email,
+            bg_send_email,
             content_text=brief,
             subject=f"Pre-Call Brief + DOSSIER: {contact_name}"
         )
-        
+
         print("💬 Queuing Slack notification...")
-        background_tasks.add_task(send_slack_lead_notification, lead_dict, agent_results)
-        
+        background_tasks.add_task(bg_send_slack, lead_dict, agent_results)
+
         print("💾 Queuing Google Drive save...")
-        background_tasks.add_task(save_to_drive, brief, filename)
+        background_tasks.add_task(bg_save_drive, brief, filename)
 
         # Save dossier separately if generated
         if "dossier" in agent_results and agent_results.get("dossier"):
@@ -325,10 +378,10 @@ async def initial_lead(request: Request, background_tasks: BackgroundTasks):
             if dossier_content and "Error" not in dossier_content:
                 dossier_filename = f"DOSSIER_{contact_name.replace(' ', '_')}.md"
                 print("📋 Queuing Dossier save to Google Drive...")
-                background_tasks.add_task(save_to_drive, dossier_content, dossier_filename)
+                background_tasks.add_task(bg_save_drive, dossier_content, dossier_filename)
 
         print("📊 Queuing Airtable CRM push...")
-        background_tasks.add_task(push_to_airtable, lead_dict, agent_results)
+        background_tasks.add_task(bg_push_airtable, lead_dict, agent_results)
 
         print("✅ Phase 1 complete! Background tasks queued.")
 

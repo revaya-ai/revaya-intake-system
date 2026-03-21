@@ -79,7 +79,6 @@ from utils import (
     send_slack_proposal_notification,
     save_to_drive,
     compile_call_prep_brief,
-    push_to_airtable
 )
 from config import COMPANY_INFO
 
@@ -123,17 +122,6 @@ def bg_save_drive(content: str, filename: str):
     except Exception as e:
         print(f"❌ Drive exception: {str(e)}")
 
-
-def bg_push_airtable(lead_dict: dict, agent_results: dict):
-    """Wrapper for Airtable push with error logging"""
-    try:
-        result = push_to_airtable(lead_dict, agent_results)
-        if result.get("success"):
-            print(f"✅ Airtable push successful: {result.get('message')}")
-        else:
-            print(f"❌ Airtable failed: {result.get('error')}")
-    except Exception as e:
-        print(f"❌ Airtable exception: {str(e)}")
 
 
 # Initialize FastAPI
@@ -380,13 +368,10 @@ async def initial_lead(request: Request, background_tasks: BackgroundTasks):
                 print("📋 Queuing Dossier save to Google Drive...")
                 background_tasks.add_task(bg_save_drive, dossier_content, dossier_filename)
 
-        print("📊 Queuing Airtable CRM push...")
-        background_tasks.add_task(bg_push_airtable, lead_dict, agent_results)
-
         print("✅ Phase 1 complete! Background tasks queued.")
 
         # Build tasks list
-        tasks_queued = ["email", "slack", "drive", "airtable"]
+        tasks_queued = ["email", "slack", "drive"]
         if "dossier" in agent_results and agent_results.get("dossier") and "Error" not in agent_results.get("dossier", ""):
             tasks_queued.append("dossier_drive")
 

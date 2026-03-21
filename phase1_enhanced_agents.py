@@ -289,11 +289,16 @@ STEP 4 - Media & Press:
 - Search: "{full_name} quote"
 - Search: "{full_name} [industry]" (e.g., "Kwame Darko soccer" or "Kwame Darko wine")
 
-STEP 5 - Background & Personal:
+STEP 5 - Background, Personal & Causes:
 - Search: "{full_name} university" or "{full_name} college"
 - Search: "{full_name} hometown" or "{full_name} biography"
 - Search: "{full_name} athlete" or "{full_name} sports" if relevant
 - Look for birth year, family mentions, personal interests
+- Search: "{full_name} charity" or "{full_name} foundation" or "{full_name} nonprofit"
+- Search: "{full_name} volunteer" or "{full_name} board member" for nonprofit boards
+- Search: "{full_name} hobbies" or "{full_name} passion" or "{full_name} outside work"
+- Look for family mentions: spouse, kids, pets — only if publicly shared
+- Look for lifestyle signals: travel, sports, creative pursuits, community involvement
 
 STEP 6 - Company Research:
 - Search for the companies they've worked at to understand context
@@ -371,39 +376,61 @@ OUTPUT FORMAT (Professional CV/Profile):
 - [Award/Recognition] - [Year] - [Source]
 
 ## Political & Public Advocacy
+*(CONFIDENTIAL — INTERNAL USE ONLY)*
 **Activity Level:** [Active / Moderate / Silent / Not Visible]
 - **FEC Donations:** [List if found, or "None found in public records"]
 - **Public Positions:** [Stances on issues if publicly stated]
-- **Board Memberships:** [Nonprofit/advocacy boards]
+- **Risk Assessment:** [Topics to avoid, safe conversation zones]
 
-*Note: Only verifiable public information included. Handle sensitively in conversation.*
+*Note: Only verifiable public information included. Handle sensitively.*
 
-## Philanthropic Interests & Causes
-- [Causes supported, volunteer work, charity involvement]
+## Causes & Philanthropy
+*(CONFIDENTIAL — INTERNAL USE ONLY)*
+- **Nonprofit Board Memberships:** [List if found]
+- **Charities Supported:** [Public giving, named donations, fundraisers]
+- **Public Advocacy Causes:** [Issues they've spoken about publicly, petitions, campaigns]
+- **Community Involvement:** [Local causes, community organizations, civic engagement]
+- **Summary:** [1–2 sentence read on what they care about beyond business]
 
-## Personal Interests & Hobbies
+## Hobbies & Personal Interests
+*(CONFIDENTIAL — INTERNAL USE ONLY)*
 [Only information publicly shared]
-- **Hobbies:** [List]
-- **Interests:** [List]
-- **Family:** [Only if publicly shared - e.g., "Mentions being a father of two"]
+- **Sports & Fitness:** [Running, golf, CrossFit, etc. if mentioned]
+- **Creative Pursuits:** [Music, art, writing if mentioned]
+- **Travel:** [Destinations mentioned, travel style if visible]
+- **Other Interests:** [Books, podcasts, communities they participate in]
+- **Lifestyle Signals:** [RV life, city vs. rural, anything that signals values]
+
+## Family & Life Context
+*(CONFIDENTIAL — INTERNAL USE ONLY)*
+[Only information publicly shared — never speculate]
+- **Family:** [Spouse/partner mentioned? Kids? Only if they've shared it publicly]
+- **Location:** [City/region if known, or signals from content/events]
+- **Life Stage:** [Early career, building a business, established, etc.]
+- **Notable life context:** [Anything that shapes their worldview — founding story, career pivot, etc.]
 
 ---
 
 ## Rapport Building Recommendations
 
-### Conversation Hooks
-1. [Specific thing to reference: "I saw your talk on X at Y conference..."]
-2. [Project or achievement to acknowledge]
-3. [Shared interest or common ground]
+### Conversation Hooks — Personal Connection
+*(Use these in the first 5 minutes before getting to business)*
+1. [Specific personal thing to reference — a cause, hobby, shared value, or life context: "I noticed you ran the [X] marathon last year..."]
+2. [Achievement or project milestone to acknowledge genuinely]
+3. [Shared interest or common ground — travel destination, book, community, etc.]
+
+### Conversation Hooks — Professional
+1. [Career achievement to reference: "I saw you led the X initiative at Y company..."]
+2. [Content they've published or talk they gave]
 
 ### Communication Style
-[Based on their content - formal/casual, data-driven/story-driven, direct/diplomatic]
+[Based on their content: formal/casual, data-driven/story-driven, direct/diplomatic]
 
 ### Topics Likely to Resonate
-- [Based on their public content and interests]
+- [Based on their public content, causes, and interests]
 
 ### Topics to Approach Carefully
-- [Any sensitive areas identified]
+- [Any sensitive areas identified from political or personal context]
 
 ---
 
